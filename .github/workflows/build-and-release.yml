@@ -120,7 +120,7 @@ jobs:
               SUPPORT_RANGE="1.20-1.20.4"
               ;;
             1.20.6)
-              SUPPORT_RANGE="1.20.5-1.20.6"
+              SUPPORT_RANGE="1.20.6"
               ;;
             *)
               SUPPORT_RANGE="$MC_VERSION"

@@ -15,13 +15,10 @@ import io.github.kingironman2011.orbital_railgun_enhanced.client.handler.SoundsH
 import io.github.kingironman2011.orbital_railgun_enhanced.network.ClientSyncPayload;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.StopAreaSoundPayload;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.StopAnimationPayload;
-import io.github.kingironman2011.orbital_railgun_enhanced.network.PlaySoundPayload;
-import io.github.kingironman2011.orbital_railgun_enhanced.network.ShootPayload;
 import ladysnake.satin.api.event.PostWorldRenderCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.render.item.BuiltinModelItemRenderer;
 import net.minecraft.util.math.BlockPos;
 import software.bernie.geckolib.animatable.client.GeoRenderProvider;
@@ -42,17 +39,6 @@ public class OrbitalRailgunClient implements ClientModInitializer {
 
         SoundsHandler sounds = new SoundsHandler();
         sounds.initializeClient();
-
-        // Register C2S (Client-to-Server) payload types
-        PayloadTypeRegistry.playC2S().register(PlaySoundPayload.ID, PlaySoundPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(ShootPayload.ID, ShootPayload.CODEC);
-        LOGGER.info("Client-to-server network payloads registered");
-
-        // Register S2C (Server-to-Client) payload types
-        PayloadTypeRegistry.playS2C().register(ClientSyncPayload.ID, ClientSyncPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(StopAreaSoundPayload.ID, StopAreaSoundPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(StopAnimationPayload.ID, StopAnimationPayload.CODEC);
-        LOGGER.info("Server-to-client network payloads registered");
 
         OrbitalRailgunItems.ORBITAL_RAILGUN.renderProviderHolder.setValue(
                 new GeoRenderProvider() {
