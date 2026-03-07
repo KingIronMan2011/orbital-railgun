@@ -116,6 +116,9 @@ jobs:
         run: |
           MC_VERSION="${{ matrix.minecraft_version }}"
           case "$MC_VERSION" in
+            1.19.2)
+              SUPPORT_RANGE="1.19.1-1.19.2"
+              ;;
             1.20.4)
               SUPPORT_RANGE="1.20-1.20.4"
               ;;

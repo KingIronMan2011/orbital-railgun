@@ -1,0 +1,175 @@
+//file:noinspection GroovyAssignabilityCheck
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+    id 'checkstyle'
+}
+
+version = rootProject.mod_version
+group = rootProject.maven_group
+
+def cfgVersion = version
+def cfgMinecraftVersion = project.minecraft_version
+def cfgLoaderVersion = project.loader_version
+def cfgOwoLibVersion = project.owolib_version
+def cfgArchivesBaseName = rootProject.archives_base_name
+
+base {
+    archivesName = "${rootProject.archives_base_name}-${project.show_minecraft_version}"
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        "orbital_railgun_enhanced" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+afterEvaluate {
+    sourceSets {
+        main {
+            java {
+                srcDirs = [file('src/main/java')]
+            }
+            resources {
+                srcDirs = [file('src/main/resources')]
+            }
+        }
+        client {
+            java {
+                srcDirs = [file('src/client/java')]
+            }
+            resources {
+                srcDirs = [file('src/client/resources')]
+            }
+        }
+        test {
+            java {
+                srcDirs = [file('src/test/java')]
+            }
+        }
+    }
+}
+
+repositories {
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroupByRegex("software\\.bernie.*")
+            includeGroup("com.eliotlash.mclib")
+        }
+    }
+    maven {
+        name = 'Ladysnake Mods'
+        url = 'https://maven.ladysnake.org/releases'
+        content {
+            includeGroup 'io.github.ladysnake'
+            includeGroup 'org.ladysnake'
+            includeGroupByRegex 'dev\\.onyxstudios.*'
+        }
+    }
+    maven {
+        name = 'Wispforest'
+        url = 'https://maven.wispforest.io'
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    compileOnly 'org.apiguardian:apiguardian-api:1.1.2'
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation "io.wispforest:owo-lib:${owolib_version}"
+    annotationProcessor "io.wispforest:owo-lib:${owolib_version}"
+    clientAnnotationProcessor "io.wispforest:owo-lib:${owolib_version}"
+
+    modImplementation("software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
+    implementation("com.eliotlash.mclib:mclib:20")
+
+    modImplementation "org.ladysnake:satin:${satin_version}"
+
+    modCompileOnly "maven.modrinth:iris:${iris_version}+${minecraft_version}"
+
+    implementation "com.google.code.gson:gson:2.10.1"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
+}
+
+processResources {
+    inputs.property "version", cfgVersion
+    inputs.property "minecraft_version", cfgMinecraftVersion
+    inputs.property "loader_version", cfgLoaderVersion
+    inputs.property "owolib_version", cfgOwoLibVersion
+    filteringCharset = "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": cfgVersion,
+                "minecraft_version": cfgMinecraftVersion,
+                "loader_version": cfgLoaderVersion,
+                "owolib_version": cfgOwoLibVersion
+    }
+}
+
+def targetRuntimeJava = 17
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.compilerArgs += ['-Xlint:-processing']
+    it.options.release.set(targetRuntimeJava)
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jar {
+    from(rootProject.file("LICENSE")) {
+        rename { "${it}_${cfgArchivesBaseName}" }
+    }
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = rootProject.archives_base_name
+            from components.java
+        }
+    }
+}
+
+// Checkstyle configuration
+checkstyle {
+    toolVersion = '10.12.5'
+    configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+    ignoreFailures = true
+    showViolations = true
+}
+
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// Test configuration
+test {
+    useJUnitPlatform()
+}

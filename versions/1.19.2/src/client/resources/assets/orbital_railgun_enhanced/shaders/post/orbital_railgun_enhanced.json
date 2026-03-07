@@ -1,0 +1,23 @@
+{
+  "targets": [
+    "strike",
+    "chromatic_abjuration"
+  ],
+  "passes": [
+    {
+      "name": "orbital_railgun_enhanced:strike",
+      "intarget": "minecraft:main",
+      "outtarget": "strike"
+    },
+    {
+      "name": "orbital_railgun_enhanced:chromatic_abjuration",
+      "intarget": "strike",
+      "outtarget": "chromatic_abjuration"
+    },
+    {
+      "name": "blit",
+      "intarget": "chromatic_abjuration",
+      "outtarget": "minecraft:main"
+    }
+  ]
+}

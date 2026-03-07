@@ -4,13 +4,13 @@ import io.github.kingironman2011.orbital_railgun_enhanced.OrbitalRailgun;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.rendering.OrbitalRailgunGuiShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.rendering.OrbitalRailgunShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.item.OrbitalRailgunItem;
-import io.github.kingironman2011.orbital_railgun_enhanced.network.ShootPayload;
-import io.github.kingironman2011.orbital_railgun_enhanced.registry.SoundsRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.option.GameOptions;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -54,17 +54,11 @@ public class MinecraftClientMixin {
                         blockHitResult.getBlockPos().toCenterPos().toVector3f();
                 OrbitalRailgunShader.INSTANCE.Dimension = player.getWorld().getRegistryKey();
 
-                // Play shoot sound locally for the shooter so they always hear it
-                try {
-                    player.playSound(SoundsRegistry.RAILGUN_SHOOT, 1.0f, 1.0f);
-                } catch (Exception ignored) {
-                    // Ignored
-                }
+                PacketByteBuf buf = PacketByteBufs.create();
+                buf.writeItemStack(orbitalRailgun.getDefaultStack());
+                buf.writeBlockPos(blockHitResult.getBlockPos());
 
-                ClientPlayNetworking.send(new ShootPayload(
-                        orbitalRailgun.getDefaultStack(),
-                        blockHitResult.getBlockPos()
-                ));
+                ClientPlayNetworking.send(OrbitalRailgun.SHOOT_PACKET_ID, buf);
             }
         }
     }
