@@ -40,11 +40,11 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "fabric": "*",
-    "minecraft": ">=1.20 <=1.20.4",
+    "minecraft": "1.19.2",
     "java": ">=17",
-    "geckolib": ">=4.0",
-    "owo-lib": ">=0.11.0",
-    "satin": ">=1.14.0"
+    "geckolib": ">=3.1",
+    "owo-lib": ">=0.8.0",
+    "satin": ">=1.9.0"
   },
   "recommends": {
     "modmenu": ">=7.0.0"
@@ -66,11 +66,7 @@
         "fabric"
       ],
       "game-versions": [
-        "1.20",
-        "1.20.1",
-        "1.20.2",
-        "1.20.3",
-        "1.20.4"
+        "1.19.2"
       ],
       "dependencies": {
         "fabric-api": {

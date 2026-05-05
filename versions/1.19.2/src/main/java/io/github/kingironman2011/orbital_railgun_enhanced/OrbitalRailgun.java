@@ -18,7 +18,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -27,6 +27,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 
@@ -39,9 +40,9 @@ public class OrbitalRailgun implements ModInitializer {
             new Identifier(MOD_ID, "stop_area_sound");
     public static final Identifier STOP_ANIMATION_PACKET_ID =
             new Identifier(MOD_ID, "stop_animation");
-    public static final Identifier SHOOT_PACKET_ID = Identifier.of(MOD_ID, "shoot_packet");
+    public static final Identifier SHOOT_PACKET_ID = new Identifier(MOD_ID, "shoot_packet");
     public static final Identifier CLIENT_SYNC_PACKET_ID =
-            Identifier.of(MOD_ID, "client_sync_packet");
+            new Identifier(MOD_ID, "client_sync_packet");
 
     public static final long RAILGUN_SOUND_DURATION_MS = 52992L;
 
@@ -88,7 +89,7 @@ public class OrbitalRailgun implements ModInitializer {
                 PLAY_SOUND_PACKET_ID,
                 (server, player, handler, buf, responseSender) -> {
                     Identifier soundId = buf.readIdentifier();
-                    SoundEvent sound = Registries.SOUND_EVENT.get(soundId);
+                    SoundEvent sound = Registry.SOUND_EVENT.get(soundId);
                     BlockPos blockPos = buf.readBlockPos();
                     float volumeShoot = buf.readFloat();
                     float pitchShoot = buf.readFloat();
@@ -197,10 +198,10 @@ public class OrbitalRailgun implements ModInitializer {
 
                                 double range = ServerConfig.INSTANCE.getSoundRange();
 
-                                List<Entity> nearby = player.getWorld().getOtherEntities(null, Box.of(blockPos.toCenterPos(), range, range, range));
+                                List<Entity> nearby = player.world.getOtherEntities(null, Box.of(Vec3d.ofCenter(blockPos), range, range, range));
                                 OrbitalRailgunStrikeManager.activeStrikes.put(
                                         new Pair<>(blockPos, nearby),
-                                        new Pair<>(server.getTicks(), player.getWorld().getRegistryKey()));
+                                        new Pair<>(server.getTicks(), player.world.getRegistryKey()));
 
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
                                     LOGGER.info("[STRIKE] Registered strike with {} nearby entities within range {}", nearby.size(), range);

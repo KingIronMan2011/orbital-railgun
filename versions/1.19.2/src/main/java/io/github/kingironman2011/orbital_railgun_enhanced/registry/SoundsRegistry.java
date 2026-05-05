@@ -4,8 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.kingironman2011.orbital_railgun_enhanced.config.ServerConfig;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 
@@ -40,6 +39,6 @@ public class SoundsRegistry {
      * @return The registered SoundEvent.
      */
     private static SoundEvent registerSoundEvent(Identifier id) {
-        return Registry.register(Registries.SOUND_EVENT, id, SoundEvent.of(id));
+        return Registry.register(Registry.SOUND_EVENT, id, new SoundEvent(id));
     }
 }

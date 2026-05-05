@@ -12,13 +12,11 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
+import net.minecraft.util.math.Matrix4f;
 
 public abstract class AbstractOrbitalRailgunShader
         implements PostWorldRenderCallback, ClientTickEvents.EndTick {
     protected final MinecraftClient client = MinecraftClient.getInstance();
-
-    private final Matrix4f projectionMatrix = new Matrix4f();
 
     protected final ManagedShaderEffect SHADER =
             ShaderEffectManager.getInstance()
@@ -53,8 +51,11 @@ public abstract class AbstractOrbitalRailgunShader
     @Override
     public void onWorldRendered(Camera camera, float tickDelta, long nanoTime) {
         if (shouldRender()) {
-            uniformInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(projectionMatrix));
-            uniformCameraPosition.set(camera.getPos().toVector3f());
+            uniformInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(new Matrix4f()));
+            uniformCameraPosition.set(
+                    (float) camera.getPos().x,
+                    (float) camera.getPos().y,
+                    (float) camera.getPos().z);
             uniformiTime.set((ticks + tickDelta) / 20f);
 
             SHADER.render(tickDelta);

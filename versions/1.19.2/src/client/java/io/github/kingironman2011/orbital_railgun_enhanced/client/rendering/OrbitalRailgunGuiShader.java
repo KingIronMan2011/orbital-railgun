@@ -9,10 +9,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Vec3d;
 
 public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
     public static final Identifier ORBITAL_RAILGUN_GUI_SHADER =
-            Identifier.of(OrbitalRailgun.MOD_ID, "shaders/post/orbital_railgun_enhanced_gui.json");
+            new Identifier(OrbitalRailgun.MOD_ID, "shaders/post/orbital_railgun_enhanced_gui.json");
     public static final OrbitalRailgunGuiShader INSTANCE = new OrbitalRailgunGuiShader();
 
     private final Uniform1f uniformIsBlockHit = SHADER.findUniform1f("IsBlockHit");
@@ -32,7 +33,6 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
 
     @Override
     public void onEndTick(MinecraftClient minecraftClient) {
-        // is it jank to disable the hud rendering here? yeah kinda
         if (shouldRender()) {
             this.client.options.hudHidden = true;
         } else if (ticks != 0) {
@@ -49,13 +49,13 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
             switch (hitResult.getType()) {
                 case BLOCK:
                     uniformIsBlockHit.set(1);
-                    uniformBlockPosition.set(
-                            ((BlockHitResult) hitResult).getBlockPos().toCenterPos().toVector3f());
+                    Vec3d blockCenter = Vec3d.ofCenter(((BlockHitResult) hitResult).getBlockPos());
+                    uniformBlockPosition.set((float) blockCenter.x, (float) blockCenter.y, (float) blockCenter.z);
                     break;
                 case ENTITY:
                     uniformIsBlockHit.set(1);
-                    uniformBlockPosition.set(
-                            ((EntityHitResult) hitResult).getEntity().getBlockPos().toCenterPos().toVector3f());
+                    Vec3d entityCenter = Vec3d.ofCenter(((EntityHitResult) hitResult).getEntity().getBlockPos());
+                    uniformBlockPosition.set((float) entityCenter.x, (float) entityCenter.y, (float) entityCenter.z);
                     break;
                 case MISS:
                     uniformIsBlockHit.set(0);

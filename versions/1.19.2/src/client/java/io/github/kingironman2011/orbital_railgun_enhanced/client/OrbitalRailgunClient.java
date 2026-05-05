@@ -1,7 +1,5 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.client;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +14,12 @@ import ladysnake.satin.api.event.PostWorldRenderCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.render.item.BuiltinModelItemRenderer;
-import net.minecraft.util.math.BlockPos;
-import software.bernie.geckolib.animatable.client.RenderProvider;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
 
 public class OrbitalRailgunClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
@@ -37,20 +35,8 @@ public class OrbitalRailgunClient implements ClientModInitializer {
         SoundsHandler sounds = new SoundsHandler();
         sounds.initializeClient();
 
-        OrbitalRailgunItems.ORBITAL_RAILGUN.renderProviderHolder.setValue(
-                new RenderProvider() {
-                    private OrbitalRailgunRenderer renderer;
-
-                    @Override
-                    public BuiltinModelItemRenderer getCustomRenderer() {
-                        if (this.renderer == null) {
-                            this.renderer = new OrbitalRailgunRenderer();
-                            LOGGER.info("Orbital railgun renderer created");
-                        }
-
-                        return this.renderer;
-                    }
-                });
+        GeoItemRenderer.registerItemRenderer(OrbitalRailgunItems.ORBITAL_RAILGUN, new OrbitalRailgunRenderer());
+        LOGGER.info("Orbital railgun renderer registered");
 
         ClientPlayNetworking.registerGlobalReceiver(
                 OrbitalRailgun.CLIENT_SYNC_PACKET_ID,
@@ -59,7 +45,8 @@ public class OrbitalRailgunClient implements ClientModInitializer {
 
                     minecraftClient.execute(
                             () -> {
-                                OrbitalRailgunShader.INSTANCE.BlockPosition = blockPos.toCenterPos().toVector3f();
+                                Vec3d center = Vec3d.ofCenter(blockPos);
+                                OrbitalRailgunShader.INSTANCE.BlockPosition = center;
                                 OrbitalRailgunShader.INSTANCE.Dimension = minecraftClient.world.getRegistryKey();
                                 LOGGER.debug("[CLIENT] Synced strike position: {}", blockPos);
                             });
@@ -72,7 +59,6 @@ public class OrbitalRailgunClient implements ClientModInitializer {
 
                     client.execute(
                             () -> {
-                                // Stop all instances of this sound for the player
                                 MinecraftClient.getInstance()
                                         .getSoundManager()
                                         .stopSounds(soundId, SoundCategory.PLAYERS);
@@ -80,11 +66,9 @@ public class OrbitalRailgunClient implements ClientModInitializer {
                             });
                 });
 
-        // Register handler for stopping animation when player leaves range
         ClientPlayNetworking.registerGlobalReceiver(OrbitalRailgun.STOP_ANIMATION_PACKET_ID,
                 (client, handler, buf, responseSender) -> {
                     client.execute(() -> {
-                        // Stop the orbital railgun shader animation
                         OrbitalRailgunShader.INSTANCE.stopAnimation();
                         LOGGER.debug("[CLIENT] Stopped animation due to leaving range");
                     });
