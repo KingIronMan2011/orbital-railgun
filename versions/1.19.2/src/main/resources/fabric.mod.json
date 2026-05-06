@@ -40,7 +40,7 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "fabric": "*",
-    "minecraft": "1.19.2",
+    "minecraft": ">=1.19.1 <=1.19.2",
     "java": ">=17",
     "geckolib": ">=3.1",
     "owo-lib": ">=0.8.0",
@@ -66,6 +66,7 @@
         "fabric"
       ],
       "game-versions": [
+        "1.19.1",
         "1.19.2"
       ],
       "dependencies": {
