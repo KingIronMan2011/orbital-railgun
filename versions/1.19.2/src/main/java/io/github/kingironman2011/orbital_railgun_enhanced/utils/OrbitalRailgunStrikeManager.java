@@ -8,18 +8,14 @@ import io.github.kingironman2011.orbital_railgun_enhanced.config.ServerConfig;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.joml.Vector2i;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,8 +25,6 @@ public class OrbitalRailgunStrikeManager {
     public static ConcurrentHashMap<Pair<BlockPos, List<Entity>>, Pair<Integer, RegistryKey<World>>>
             activeStrikes =
             new ConcurrentHashMap<Pair<BlockPos, List<Entity>>, Pair<Integer, RegistryKey<World>>>();
-    private static final RegistryKey<DamageType> STRIKE_DAMAGE =
-            RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(OrbitalRailgun.MOD_ID, "strike"));
     private static final int RADIUS = 24;
     private static final int RADIUS_SQUARED = RADIUS * RADIUS;
     private static final Boolean[][] mask = new Boolean[RADIUS * 2 + 1][RADIUS * 2 + 1];
@@ -58,17 +52,10 @@ public class OrbitalRailgunStrikeManager {
 
                         entities.forEach(
                                 entity -> {
-                                    if (entity.getWorld().getRegistryKey() == dimension
-                                            && entity.getPos().subtract(blockPos.toCenterPos()).lengthSquared()
+                                    if (entity.world.getRegistryKey() == dimension
+                                            && entity.getPos().subtract(Vec3d.ofCenter(blockPos)).lengthSquared()
                                             <= RADIUS_SQUARED) {
-                                        entity.damage(
-                                                new DamageSource(
-                                                        world
-                                                                .getRegistryManager()
-                                                                .get(RegistryKeys.DAMAGE_TYPE)
-                                                                .getEntry(STRIKE_DAMAGE)
-                                                                .get()),
-                                                strikeDamage);
+                                        entity.damage(new DamageSource("strike"), strikeDamage);
                                         if (ServerConfig.INSTANCE.isDebugMode()) {
                                             LOGGER.debug(
                                                     "[STRIKE] Damaged entity {} for {} damage",
@@ -96,13 +83,14 @@ public class OrbitalRailgunStrikeManager {
                                     if (entity instanceof PlayerEntity player && player.isSpectator()) {
                                         return;
                                     }
-                                    if (entity.getWorld().getRegistryKey() == dimension) {
-                                        Vec3d dir = blockPos.toCenterPos().subtract(entity.getPos());
+                                    if (entity.world.getRegistryKey() == dimension) {
+                                        Vec3d dir = Vec3d.ofCenter(blockPos).subtract(entity.getPos());
                                         double mag =
                                                 Math.min(1. / Math.abs(dir.length() - 20.) * 4. * (age - 400.) / 300., 5.);
                                         dir = dir.normalize();
 
-                                        entity.addVelocity(dir.multiply(mag));
+                                        Vec3d velocity = dir.multiply(mag);
+                                        entity.addVelocity(velocity.x, velocity.y, velocity.z);
                                         entity.velocityModified = true;
                                     }
                                 });
@@ -134,7 +122,7 @@ public class OrbitalRailgunStrikeManager {
         LOGGER.info("Initializing strike manager...");
         for (int x = -RADIUS; x <= RADIUS; x++) {
             for (int z = -RADIUS; z <= RADIUS; z++) {
-                mask[x + RADIUS][z + RADIUS] = Vector2i.lengthSquared(x, z) <= RADIUS_SQUARED;
+                mask[x + RADIUS][z + RADIUS] = (x * x + z * z) <= RADIUS_SQUARED;
             }
         }
         if (ServerConfig.INSTANCE.isDebugMode()) {

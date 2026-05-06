@@ -21,7 +21,7 @@ public class CommandRegistry {
 
         context
                 .getSource()
-                .sendFeedback(() -> Text.translatable("command.orbital_railgun_enhanced.help"), false);
+                .sendFeedback(Text.translatable("command.orbital_railgun_enhanced.help"), false);
         return 1;
     }
 
@@ -175,7 +175,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.debug.set", enabled), true);
+                        Text.translatable("command.orbital_railgun_enhanced.debug.set", enabled), true);
 
         if (enabled) {
             OrbitalRailgun.LOGGER.info("Debug mode enabled by {}", context.getSource().getName());
@@ -190,7 +190,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.radius.set", radius), true);
+                        Text.translatable("command.orbital_railgun_enhanced.radius.set", radius), true);
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
             OrbitalRailgun.LOGGER.info(
@@ -204,7 +204,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.strikeDamage.set", damage),
+                        Text.translatable("command.orbital_railgun_enhanced.strikeDamage.set", damage),
                         true);
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
@@ -219,7 +219,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.cooldown.set", ticks), true);
+                        Text.translatable("command.orbital_railgun_enhanced.cooldown.set", ticks), true);
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
             OrbitalRailgun.LOGGER.info(
@@ -233,7 +233,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.maxStrikes.set", maxStrikes),
+                        Text.translatable("command.orbital_railgun_enhanced.maxStrikes.set", maxStrikes),
                         true);
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
@@ -248,7 +248,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.particles.set", enabled),
+                        Text.translatable("command.orbital_railgun_enhanced.particles.set", enabled),
                         true);
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
@@ -263,7 +263,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.config.reloaded"), true);
+                        Text.translatable("command.orbital_railgun_enhanced.config.reloaded"), true);
 
         OrbitalRailgun.LOGGER.info(
                 "Server configuration reloaded by {}", context.getSource().getName());
@@ -275,7 +275,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.debug.current", debugMode),
+                        Text.translatable("command.orbital_railgun_enhanced.debug.current", debugMode),
                         false);
         return 1;
     }
@@ -285,7 +285,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.radius.current", radius),
+                        Text.translatable("command.orbital_railgun_enhanced.radius.current", radius),
                         false);
         return 1;
     }
@@ -295,8 +295,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () ->
-                                Text.translatable("command.orbital_railgun_enhanced.strikeDamage.current", damage),
+                        Text.translatable("command.orbital_railgun_enhanced.strikeDamage.current", damage),
                         false);
         return 1;
     }
@@ -306,7 +305,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.cooldown.current", ticks),
+                        Text.translatable("command.orbital_railgun_enhanced.cooldown.current", ticks),
                         false);
         return 1;
     }
@@ -316,9 +315,8 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () ->
-                                Text.translatable(
-                                        "command.orbital_railgun_enhanced.maxStrikes.current", maxStrikes),
+                        Text.translatable(
+                                "command.orbital_railgun_enhanced.maxStrikes.current", maxStrikes),
                         false);
         return 1;
     }
@@ -328,7 +326,7 @@ public class CommandRegistry {
         context
                 .getSource()
                 .sendFeedback(
-                        () -> Text.translatable("command.orbital_railgun_enhanced.particles.current", enabled),
+                        Text.translatable("command.orbital_railgun_enhanced.particles.current", enabled),
                         false);
         return 1;
     }

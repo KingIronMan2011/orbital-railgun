@@ -14,7 +14,7 @@ import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.item.Item;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 
@@ -31,7 +31,7 @@ public class SoundsHandler {
     private PositionedSoundInstance scopeSoundInstance;
 
     public void initializeClient() {
-        railgunItem = Registries.ITEM.get(ORBITAL_RAILGUN_ITEM_ID);
+        railgunItem = Registry.ITEM.get(ORBITAL_RAILGUN_ITEM_ID);
         ClientTickEvents.END_CLIENT_TICK.register(this::onEndTick);
         LOGGER.info("Client sounds handler initialized");
     }
@@ -95,7 +95,7 @@ public class SoundsHandler {
 
             if (!lastCooldownActive && cooldownNow && OrbitalRailgunClient.CONFIG.enableShootSound()) {
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeIdentifier(Registries.SOUND_EVENT.getId(SoundsRegistry.RAILGUN_SHOOT));
+                buf.writeIdentifier(Registry.SOUND_EVENT.getId(SoundsRegistry.RAILGUN_SHOOT));
                 buf.writeBlockPos(player.getBlockPos());
                 buf.writeFloat(volumeShoot);
                 buf.writeFloat(pitchShoot);

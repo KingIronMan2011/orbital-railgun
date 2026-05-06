@@ -11,24 +11,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.mutable.MutableObject;
-import software.bernie.geckolib.animatable.GeoItem;
-import software.bernie.geckolib.animatable.client.RenderProvider;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.util.GeckoLibUtil;
+import software.bernie.geckolib3.core.IAnimatable;
+import software.bernie.geckolib3.core.manager.AnimationData;
+import software.bernie.geckolib3.core.manager.AnimationFactory;
+import software.bernie.geckolib3.util.GeckoLibUtil;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-public class OrbitalRailgunItem extends Item implements GeoItem {
+public class OrbitalRailgunItem extends Item implements IAnimatable {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
-    private final AnimatableInstanceCache CACHE = GeckoLibUtil.createInstanceCache(this);
-    private final Supplier<Object> renderProvider = GeoItem.makeRenderer(this);
-    public final MutableObject<RenderProvider> renderProviderHolder = new MutableObject<>();
+    private final AnimationFactory FACTORY = GeckoLibUtil.createFactory(this);
 
     public OrbitalRailgunItem() {
-        super(new FabricItemSettings().rarity(Rarity.EPIC).maxCount(1));
+        super(new FabricItemSettings().group(net.minecraft.item.ItemGroup.COMBAT).rarity(Rarity.EPIC).maxCount(1));
         if (ServerConfig.INSTANCE.isDebugMode()) {
             LOGGER.debug("[ITEM] OrbitalRailgunItem created");
         }
@@ -73,21 +66,11 @@ public class OrbitalRailgunItem extends Item implements GeoItem {
     }
 
     @Override
-    public void createRenderer(Consumer<Object> consumer) {
-        consumer.accept(this.renderProviderHolder.getValue());
+    public void registerControllers(AnimationData animationData) {
     }
 
     @Override
-    public Supplier<Object> getRenderProvider() {
-        return renderProvider;
-    }
-
-    @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return CACHE;
+    public AnimationFactory getFactory() {
+        return FACTORY;
     }
 }

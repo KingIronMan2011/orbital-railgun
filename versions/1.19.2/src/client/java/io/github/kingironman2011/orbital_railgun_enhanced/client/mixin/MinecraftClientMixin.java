@@ -13,6 +13,7 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,9 +51,9 @@ public class MinecraftClientMixin {
                     && hitResult instanceof BlockHitResult blockHitResult) {
                 this.interactionManager.stopUsingItem(this.player);
                 orbitalRailgun.shoot(this.player);
-                OrbitalRailgunShader.INSTANCE.BlockPosition =
-                        blockHitResult.getBlockPos().toCenterPos().toVector3f();
-                OrbitalRailgunShader.INSTANCE.Dimension = player.getWorld().getRegistryKey();
+                Vec3d blockCenter = Vec3d.ofCenter(blockHitResult.getBlockPos());
+                OrbitalRailgunShader.INSTANCE.BlockPosition = blockCenter;
+                OrbitalRailgunShader.INSTANCE.Dimension = player.world.getRegistryKey();
 
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeItemStack(orbitalRailgun.getDefaultStack());
