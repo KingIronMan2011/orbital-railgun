@@ -3,7 +3,6 @@ package io.github.kingironman2011.orbital_railgun_enhanced.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.kingironman2011.orbital_railgun_enhanced.OrbitalRailgun;
 import io.github.kingironman2011.orbital_railgun_enhanced.config.ServerConfig;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
