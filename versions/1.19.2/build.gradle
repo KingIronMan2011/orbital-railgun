@@ -97,7 +97,7 @@ dependencies {
     annotationProcessor "io.wispforest:owo-lib:${owolib_version}"
     clientAnnotationProcessor "io.wispforest:owo-lib:${owolib_version}"
 
-    modImplementation("software.bernie.geckolib:geckolib-fabric-${geckolib_mc_version}:${geckolib_version}")
+    modImplementation("software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
     implementation("com.eliotlash.mclib:mclib:20")
 
     modImplementation "io.github.ladysnake:satin:${satin_version}"
