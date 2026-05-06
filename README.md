@@ -16,8 +16,9 @@ This Video was made by HyIsNoob, but as it has nearly the same stuff as this mod
 
 ### Supported Minecraft Versions
 
-| Version | Status |
-|---------|--------|
+| Version | Status      |
+|---------|-------------|
+| 1.19.1 - 1.19.2 | ✅ Supported |
 | 1.20 - 1.20.1 | ✅ Supported |
 | 1.20.2 | ✅ Supported |
 | 1.20.3 - 1.20.4 | ✅ Supported |

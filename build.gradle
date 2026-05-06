@@ -19,17 +19,28 @@ tasks.register('buildAll') {
 build.dependsOn buildAll
 
 // Task to copy built JARs from version subprojects to root build/libs
-tasks.register('copyJars', Copy) {
+tasks.register('copyJars') {
     description = 'Copies built JARs from version subprojects to root build/libs'
     group = 'build'
     dependsOn buildAll
 
-    into "${buildDir}/libs"
+    inputs.files versionProjects.collect { "${it.projectDir}/build/libs" }
+    outputs.dir "${buildDir}/libs"
 
-    versionProjects.each { proj ->
-        from("${proj.projectDir}/build/libs") {
-            include '*.jar'
-            exclude '*-sources.jar'
+    doLast {
+        def outputDir = file("${buildDir}").absolutePath + File.separator + "libs"
+        file(outputDir).mkdirs()
+
+        versionProjects.each { proj ->
+            def libsDir = file("${proj.projectDir}/build/libs")
+            if (libsDir.exists()) {
+                ant.copy(todir: outputDir) {
+                    fileset(dir: libsDir.absolutePath) {
+                        include(name: "*.jar")
+                        exclude(name: "*-sources.jar")
+                    }
+                }
+            }
         }
     }
 }
@@ -44,7 +55,7 @@ tasks.register('cleanAll') {
     dependsOn versionProjects.collect { "${it.path}:clean" }
 }
 
-build.dependsOn cleanAll
+// build.dependsOn cleanAll
 clean.dependsOn cleanAll
 
 // Aggregate task to run tests in all versions
