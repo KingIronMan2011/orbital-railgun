@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "orbital_railgun_enhanced",
+  "version": "${version}",
+  "name": "Orbital Railgun Enhanced",
+  "description": "Destroy your enemies with an orbital strike, but with sounds and more features! This enhanced fork adds custom sound effects, visual shaders, configurable settings, and improved gameplay mechanics.",
+  "authors": [
+    "KingIronMan2011"
+  ],
+  "contributors": [
+    "Mishkis",
+    "HyIsNoob"
+  ],
+  "contact": {
+    "issues": "https://github.com/KingIronMan2011/orbital-railgun-enhanced/issues",
+    "sources": "https://github.com/KingIronMan2011/orbital-railgun-enhanced"
+  },
+  "license": "MIT",
+  "icon": "assets/orbital_railgun_enhanced/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "io.github.kingironman2011.orbital_railgun_enhanced.universal.UniversalClientInitializer"
+    ],
+    "main": [
+      "io.github.kingironman2011.orbital_railgun_enhanced.universal.UniversalModInitializer"
+    ],
+    "owo": [
+      "io.github.kingironman2011.orbital_railgun_enhanced.impl.v1_20_4.client.config.EnhancedConfig"
+    ]
+  },
+  "mixins": [
+    "orbital_railgun_enhanced.mixins.json",
+    {
+      "config": "orbital_railgun_enhanced.client.mixins.v1_19_2.json",
+      "environment": "client"
+    },
+    {
+      "config": "orbital_railgun_enhanced.client.mixins.v1_20_4.json",
+      "environment": "client"
+    },
+    {
+      "config": "orbital_railgun_enhanced.client.mixins.v1_20_6.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "fabric-api": "*",
+    "fabric": "*",
+    "minecraft": ">=1.19.1 <=1.20.6",
+    "java": ">=17",
+    "geckolib": "*",
+    "owo-lib": "*",
+    "satin": "*"
+  },
+  "recommends": {
+    "modmenu": "*"
+  },
+  "suggests": {
+    "sound_physics_remastered": "*",
+    "dynamicsurroundings": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.source": "https://github.com/KingIronMan2011/orbital-railgun-enhanced",
+        "modmenu.issues": "https://github.com/KingIronMan2011/orbital-railgun-enhanced/issues"
+      }
+    },
+    "loom:injected_interfaces": {},
+    "mc-publish": {
+      "loaders": [
+        "fabric"
+      ],
+      "game-versions": [
+        "1.19.1",
+        "1.19.2",
+        "1.20",
+        "1.20.1",
+        "1.20.2",
+        "1.20.3",
+        "1.20.4",
+        "1.20.5",
+        "1.20.6"
+      ],
+      "dependencies": {
+        "fabric-api": {
+          "type": "required"
+        },
+        "geckolib": {
+          "type": "required"
+        },
+        "owo-lib": {
+          "type": "required"
+        },
+        "satin": {
+          "type": "required"
+        }
+      }
+    }
+  }
+}

@@ -1,14 +1,38 @@
-// Root project build file - delegates to version subprojects
-// This project does not build anything itself; all builds are done through version subprojects
+// Root project build file - delegates to version subprojects and builds the universal JAR.
+// The universal JAR bundles all version-specific implementations and selects the right one
+// at runtime based on the detected Minecraft version.
+
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath 'com.gradleup.shadow:shadow-gradle-plugin:8.3.6'
+    }
+}
 
 plugins {
     id 'base'
 }
 
+apply plugin: 'com.gradleup.shadow'
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 // Get only the version subprojects (not the intermediate 'versions' project)
 def versionProjects = subprojects.findAll { it.path.startsWith(':versions:') && it.path.count(':') == 2 }
 
-// Aggregate task to build all versions
+// Shorthand project references used throughout
+def proj1192 = project(':versions:1.19.2')
+def proj1204 = project(':versions:1.20.4')
+def proj1206 = project(':versions:1.20.6')
+
+// ─── Helper: resolve the primary (non-sources) remapped JAR output ────────────────
+static File getRemapJarFile(Project versionProject) {
+    return versionProject.tasks.named('remapJar').get().archiveFile.get().asFile
+}
+
+// ─── Aggregate task to build all versions ─────────────────────────────────────────
 tasks.register('buildAll') {
     description = 'Builds all Minecraft version subprojects'
     group = 'build'
@@ -18,7 +42,7 @@ tasks.register('buildAll') {
 // Make the default 'build' task depend on all subproject builds
 build.dependsOn buildAll
 
-// Task to copy built JARs from version subprojects to root build/libs
+// ─── Task to copy built JARs from version subprojects to root build/libs ──────────
 tasks.register('copyJars', Copy) {
     description = 'Copies built JARs from version subprojects to root build/libs'
     group = 'build'
@@ -37,7 +61,7 @@ tasks.register('copyJars', Copy) {
 // Make build also copy JARs to root
 build.dependsOn copyJars
 
-// Aggregate task to clean all versions
+// ─── Aggregate task to clean all versions ─────────────────────────────────────────
 tasks.register('cleanAll') {
     description = 'Cleans all Minecraft version subprojects'
     group = 'build'
@@ -47,9 +71,185 @@ tasks.register('cleanAll') {
 build.dependsOn cleanAll
 clean.dependsOn cleanAll
 
-// Aggregate task to run tests in all versions
+// ─── Aggregate task to run tests in all versions ──────────────────────────────────
 tasks.register('testAll') {
     description = 'Runs tests in all Minecraft version subprojects'
     group = 'verification'
     dependsOn versionProjects.collect { "${it.path}:test" }
 }
+
+// =================================================================================
+// Universal JAR: single output that works across MC 1.19.2, 1.20.4, and 1.20.6.
+//
+// Strategy:
+//  1. Each version's remapped JAR is processed by a ShadowJar task that relocates
+//     ALL mod classes into a version-specific sub-package
+//     (e.g. "...orbital_railgun_enhanced" → "...orbital_railgun_enhanced.impl.v1_20_4").
+//     The "universal" sub-package (which contains the thin wrapper code) is excluded
+//     from relocation so its classes remain at their stable original paths.
+//     References that are already inside "impl.*" are also excluded to prevent
+//     double-relocation when shadow rewrites string constants.
+//  2. Version-specific mixin configuration files are generated that reference the
+//     relocated mixin packages and the shared VersionMixinPlugin.
+//  3. The three relocated JARs plus a single universal fabric.mod.json are merged
+//     into one universal JAR.
+// =================================================================================
+
+// ─── 1a. Relocate 1.19.2 ──────────────────────────────────────────────────────────
+tasks.register('relocatedJar1_19_2', ShadowJar) {
+    group = 'universal'
+    description = 'Relocates 1.19.2 classes to impl.v1_19_2 sub-package'
+    dependsOn ':versions:1.19.2:remapJar'
+
+    from({ zipTree(getRemapJarFile(proj1192)) })
+
+    relocate('io.github.kingironman2011.orbital_railgun_enhanced',
+             'io.github.kingironman2011.orbital_railgun_enhanced.impl.v1_19_2') {
+        // Do not relocate the universal wrapper classes.
+        exclude 'io.github.kingironman2011.orbital_railgun_enhanced.universal.*'
+        // Prevent double-relocation of literals that already reference impl.*.
+        exclude 'io.github.kingironman2011.orbital_railgun_enhanced.impl.*'
+    }
+
+    // Exclude files that will be provided centrally by the universal merge task.
+    exclude 'fabric.mod.json'
+    exclude 'orbital_railgun_enhanced.mixins.json'
+    exclude 'orbital_railgun_enhanced.client.mixins.json'
+
+    archiveBaseName = 'relocated-1.19.2'
+    archiveVersion = ''
+    archiveClassifier = ''
+    destinationDirectory = layout.buildDirectory.dir('tmp/relocated')
+}
+
+// ─── 1b. Relocate 1.20.4 ──────────────────────────────────────────────────────────
+tasks.register('relocatedJar1_20_4', ShadowJar) {
+    group = 'universal'
+    description = 'Relocates 1.20.4 classes to impl.v1_20_4 sub-package'
+    dependsOn ':versions:1.20.4:remapJar'
+
+    from({ zipTree(getRemapJarFile(proj1204)) })
+
+    relocate('io.github.kingironman2011.orbital_railgun_enhanced',
+             'io.github.kingironman2011.orbital_railgun_enhanced.impl.v1_20_4') {
+        // Preserve the universal wrapper classes at their original stable paths.
+        exclude 'io.github.kingironman2011.orbital_railgun_enhanced.universal.*'
+        // Prevent double-relocation of literals that already reference impl.*.
+        exclude 'io.github.kingironman2011.orbital_railgun_enhanced.impl.*'
+    }
+
+    exclude 'fabric.mod.json'
+    exclude 'orbital_railgun_enhanced.mixins.json'
+    exclude 'orbital_railgun_enhanced.client.mixins.json'
+
+    archiveBaseName = 'relocated-1.20.4'
+    archiveVersion = ''
+    archiveClassifier = ''
+    destinationDirectory = layout.buildDirectory.dir('tmp/relocated')
+}
+
+// ─── 1c. Relocate 1.20.6 ──────────────────────────────────────────────────────────
+tasks.register('relocatedJar1_20_6', ShadowJar) {
+    group = 'universal'
+    description = 'Relocates 1.20.6 classes to impl.v1_20_6 sub-package'
+    dependsOn ':versions:1.20.6:remapJar'
+
+    from({ zipTree(getRemapJarFile(proj1206)) })
+
+    relocate('io.github.kingironman2011.orbital_railgun_enhanced',
+             'io.github.kingironman2011.orbital_railgun_enhanced.impl.v1_20_6') {
+        exclude 'io.github.kingironman2011.orbital_railgun_enhanced.universal.*'
+        exclude 'io.github.kingironman2011.orbital_railgun_enhanced.impl.*'
+    }
+
+    exclude 'fabric.mod.json'
+    exclude 'orbital_railgun_enhanced.mixins.json'
+    exclude 'orbital_railgun_enhanced.client.mixins.json'
+
+    archiveBaseName = 'relocated-1.20.6'
+    archiveVersion = ''
+    archiveClassifier = ''
+    destinationDirectory = layout.buildDirectory.dir('tmp/relocated')
+}
+
+// ─── 2. Generate version-specific mixin configuration files ───────────────────────
+tasks.register('generateUniversalMixinConfigs') {
+    group = 'universal'
+    description = 'Generates version-specific client mixin config JSONs for the universal JAR'
+
+    def outDir = layout.buildDirectory.dir('generated/universal-mixin-configs')
+    outputs.dir(outDir)
+
+    doLast {
+        def dir = outDir.get().asFile
+        dir.mkdirs()
+
+        def pluginClass =
+                'io.github.kingironman2011.orbital_railgun_enhanced.universal.VersionMixinPlugin'
+
+        def template = { String versionSuffix ->
+            """{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.kingironman2011.orbital_railgun_enhanced.impl.${versionSuffix}.client.mixin",
+  "plugin": "${pluginClass}",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "AbstractClientPlayerEntity",
+    "MinecraftClientMixin",
+    "MouseMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+"""
+        }
+
+        new File(dir, 'orbital_railgun_enhanced.client.mixins.v1_19_2.json').text =
+                template('v1_19_2')
+        new File(dir, 'orbital_railgun_enhanced.client.mixins.v1_20_4.json').text =
+                template('v1_20_4')
+        new File(dir, 'orbital_railgun_enhanced.client.mixins.v1_20_6.json').text =
+                template('v1_20_6')
+    }
+}
+
+// ─── 3. Build the universal JAR ───────────────────────────────────────────────────
+tasks.register('universalJar', Jar) {
+    group = 'universal'
+    description = 'Produces a single universal JAR that works across MC 1.19.2, 1.20.4, and 1.20.6'
+
+    dependsOn 'relocatedJar1_20_4', 'relocatedJar1_19_2', 'relocatedJar1_20_6',
+              'generateUniversalMixinConfigs'
+
+    archiveBaseName = rootProject.archives_base_name
+    archiveVersion = rootProject.mod_version
+    archiveClassifier = 'universal'
+    destinationDirectory = layout.buildDirectory.dir('libs')
+
+    // 1.20.4 first: it contains the universal wrapper classes (VersionManager etc.)
+    from({ zipTree(tasks.named('relocatedJar1_20_4').get().archiveFile) })
+    // 1.19.2: adds the 1.19.2 implementation + unique assets (e.g. animations/)
+    from({ zipTree(tasks.named('relocatedJar1_19_2').get().archiveFile) })
+    // 1.20.6: adds the 1.20.6 implementation + extra shader files
+    from({ zipTree(tasks.named('relocatedJar1_20_6').get().archiveFile) })
+
+    // Universal fabric.mod.json replaces the per-version ones (already excluded above).
+    from(proj1204.file('src/main/resources/fabric.universal.mod.json')) {
+        rename { 'fabric.mod.json' }
+    }
+
+    // Server-side mixin config (empty in all versions – take from 1.20.4).
+    from(proj1204.file('src/main/resources/orbital_railgun_enhanced.mixins.json'))
+
+    // Generated version-specific client mixin configurations.
+    from({ tasks.named('generateUniversalMixinConfigs').get().outputs.files })
+
+    // When the same resource exists in multiple version JARs (assets, textures, etc.)
+    // keep the first occurrence (they are either identical or the 1.20.4 version is preferred).
+    duplicatesStrategy = DuplicatesStrategy.FIRST
+}
+
+// Wire the universal JAR into the default build lifecycle.
+build.dependsOn 'universalJar'

@@ -13,6 +13,12 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'orbital-railgun-enhanced'
 
 // Include version-specific subprojects
