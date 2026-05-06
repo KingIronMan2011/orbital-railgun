@@ -33,6 +33,7 @@ public abstract class AbstractOrbitalRailgunShader
     private final Uniform1f uniformiTime = SHADER.findUniform1f("iTime");
     protected final Uniform3f uniformBlockPosition = SHADER.findUniform3f("BlockPosition");
 
+    private final Matrix4f projectionMatrix = new Matrix4f();
     protected int ticks = 0;
 
     protected abstract Identifier getIdentifier();
@@ -51,7 +52,7 @@ public abstract class AbstractOrbitalRailgunShader
     @Override
     public void onWorldRendered(Camera camera, float tickDelta, long nanoTime) {
         if (shouldRender()) {
-            uniformInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(new Matrix4f()));
+            uniformInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(projectionMatrix));
             uniformCameraPosition.set(
                     (float) camera.getPos().x,
                     (float) camera.getPos().y,
