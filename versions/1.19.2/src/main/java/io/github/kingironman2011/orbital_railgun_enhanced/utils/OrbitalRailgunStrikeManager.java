@@ -89,7 +89,8 @@ public class OrbitalRailgunStrikeManager {
                                                 Math.min(1. / Math.abs(dir.length() - 20.) * 4. * (age - 400.) / 300., 5.);
                                         dir = dir.normalize();
 
-                                        entity.addVelocity(dir.multiply(mag));
+                                        Vec3d velocity = dir.multiply(mag);
+                                        entity.addVelocity(velocity.x, velocity.y, velocity.z);
                                         entity.velocityModified = true;
                                     }
                                 });
