@@ -7,12 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.5]
+
 ### Added
 - Added CHANGELOG.md for tracking changes
 - Added unit tests for config parsing, utils, and math
 - Added integration/smoke tests for server runs
 - Added code style configuration (Checkstyle)
 - Improved mod metadata in fabric.mod.json
+- Changed to external dependencies and no integrated ones so its comaptible with more versions.
 
 ## [1.3.4]
 
