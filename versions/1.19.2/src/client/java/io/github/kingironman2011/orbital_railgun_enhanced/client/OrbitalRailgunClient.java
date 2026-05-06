@@ -19,7 +19,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
+import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 
 public class OrbitalRailgunClient implements ClientModInitializer {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");

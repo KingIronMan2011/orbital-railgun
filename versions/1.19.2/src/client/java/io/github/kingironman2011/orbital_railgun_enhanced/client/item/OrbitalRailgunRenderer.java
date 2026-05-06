@@ -3,7 +3,7 @@ package io.github.kingironman2011.orbital_railgun_enhanced.client.item;
 import io.github.kingironman2011.orbital_railgun_enhanced.item.OrbitalRailgunItem;
 import net.minecraft.util.Identifier;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
-import software.bernie.geckolib3.renderer.geo.GeoItemRenderer;
+import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 
 public class OrbitalRailgunRenderer extends GeoItemRenderer<OrbitalRailgunItem> {
     public OrbitalRailgunRenderer() {
@@ -12,17 +12,17 @@ public class OrbitalRailgunRenderer extends GeoItemRenderer<OrbitalRailgunItem> 
 
     public static class OrbitalRailgunModel extends AnimatedGeoModel<OrbitalRailgunItem> {
         @Override
-        public Identifier getModelLocation(OrbitalRailgunItem object) {
+        public Identifier getModelResource(OrbitalRailgunItem object) {
             return new Identifier("orbital_railgun_enhanced", "geo/item/orbital_railgun.geo.json");
         }
 
         @Override
-        public Identifier getTextureLocation(OrbitalRailgunItem object) {
+        public Identifier getTextureResource(OrbitalRailgunItem object) {
             return new Identifier("orbital_railgun_enhanced", "textures/item/orbital_railgun.png");
         }
 
         @Override
-        public Identifier getAnimationFileLocation(OrbitalRailgunItem animatable) {
+        public Identifier getAnimationResource(OrbitalRailgunItem animatable) {
             return new Identifier("orbital_railgun_enhanced", "animations/orbital_railgun.animation.json");
         }
     }

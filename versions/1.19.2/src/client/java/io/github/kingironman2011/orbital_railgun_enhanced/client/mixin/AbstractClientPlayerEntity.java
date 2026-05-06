@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(net.minecraft.client.network.AbstractClientPlayerEntity.class)
 public abstract class AbstractClientPlayerEntity extends PlayerEntity {
     public AbstractClientPlayerEntity(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
-        super(world, pos, yaw, gameProfile);
+        super(world, pos, yaw, gameProfile, null);
     }
 
     @ModifyExpressionValue(
