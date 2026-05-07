@@ -55,32 +55,40 @@ build.dependsOn copyJars
 // DuplicatesStrategy.EXCLUDE keeps one copy. Version-specific classes live in
 // unique packages (impl.v1192, impl.v1204, impl.v1206) so all are included
 // without conflict. AdapterLoader picks the right one at runtime via Class.forName.
+//
+// Local usage:  ./gradlew build         (copyJars builds all, then mergeJars runs)
+// CI usage:     ./gradlew mergeJars     (JARs pre-restored by workflow before this call)
 tasks.register('mergeJars', Jar) {
     description = 'Merges all version JARs into one universal JAR'
     group = 'build'
-    dependsOn copyJars
 
     archiveBaseName    = rootProject.archives_base_name
     archiveVersion     = rootProject.mod_version
     archiveClassifier  = 'all'
-    destinationDirectory = file("\${buildDir}/libs/merged")
+    destinationDirectory = file("${buildDir}/libs/merged")
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-    // Process latest -> oldest so the most modern fabric.mod.json wins dedup
+    // provider{} defers file-tree enumeration to execution time so configuration
+    // does not fail when JARs have not been built yet.
     ['1.20.6', '1.20.4', '1.19.2'].each { mc ->
         def libsDir = project(":versions:${mc}").file('build/libs')
-        from(fileTree(libsDir) {
-            include '*.jar'
-            exclude '*-sources.jar'
-            exclude '*-dev.jar'
-        }.collect { zipTree(it) })
+        from(provider {
+            fileTree(libsDir) {
+                include '*.jar'
+                exclude '*-sources.jar'
+                exclude '*-dev.jar'
+            }.collect { zipTree(it) }
+        })
     }
 
     from(rootProject.file('LICENSE'))
 }
 
-build.dependsOn mergeJars
+// Full local build: build triggers copyJars (which builds all versions),
+// and copyJars is finalised by mergeJars so the universal JAR is always produced.
+copyJars.finalizedBy mergeJars
+build.dependsOn copyJars
 
 // Aggregate task to clean all versions
 tasks.register('cleanAll') {

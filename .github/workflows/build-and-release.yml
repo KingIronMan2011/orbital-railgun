@@ -8,6 +8,7 @@ on:
     paths:
       - "gradle.properties"
       - "versions/**"
+      - "common/**"
       - "build.gradle"
       - "settings.gradle"
       - ".github/workflows/build-and-release.yml"
@@ -16,70 +17,67 @@ on:
 permissions:
   contents: write
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Pipeline overview
+#
+# 1. check-version      Read mod_version; skip everything if v{version} tag
+#                       already exists on the repo.
+# 2. build (matrix)     Build each MC version subproject in parallel and
+#                       upload the resulting JAR as a workflow artifact.
+# 3. merge-and-release  Download all version JARs, restore them to the paths
+#                       the mergeJars Gradle task expects, run mergeJars, then
+#                       create a single GitHub Release (tag v{version}) with
+#                       the universal JAR and each per-version JAR attached.
+# ─────────────────────────────────────────────────────────────────────────────
+
 jobs:
+  # ── 1. Version check ───────────────────────────────────────────────────────
   check-version:
+    name: Check version
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get-version.outputs.version }}
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      should-release: ${{ steps.check-tag.outputs.should-release }}
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get mod version from gradle.properties
+      - name: Read mod_version
         id: get-version
         run: |
-          VERSION=$(grep "mod_version=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Mod version: $VERSION"
 
-      - name: Set up build matrix
-        id: set-matrix
+      - name: Check whether release tag already exists
+        id: check-tag
         run: |
-          # Find all version directories and check if tags exist
-          MATRIX_INCLUDE="["
-          FIRST=true
-          for VERSION_DIR in versions/*/; do
-            if [ -d "$VERSION_DIR" ]; then
-              MC_VERSION=$(basename "$VERSION_DIR")
-              MOD_VERSION=$(grep "mod_version=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-              TAG_NAME="v${MOD_VERSION}-${MC_VERSION}"
-
-              # Check if tag exists
-              if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-                if [ "$FIRST" = true ]; then
-                  FIRST=false
-                else
-                  MATRIX_INCLUDE="$MATRIX_INCLUDE,"
-                fi
-                MATRIX_INCLUDE="$MATRIX_INCLUDE{\"minecraft_version\":\"$MC_VERSION\"}"
-                echo "Will build for Minecraft $MC_VERSION (tag $TAG_NAME doesn't exist)"
-              else
-                echo "Skipping Minecraft $MC_VERSION (tag $TAG_NAME exists)"
-              fi
-            fi
-          done
-          MATRIX_INCLUDE="$MATRIX_INCLUDE]"
-
-          if [ "$MATRIX_INCLUDE" = "[]" ]; then
-            echo "No versions to build"
-            echo "matrix=" >> $GITHUB_OUTPUT
+          VERSION=$(grep "^mod_version=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists — skipping release."
+            echo "should-release=false" >> "$GITHUB_OUTPUT"
           else
-            echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
-            echo "Build matrix: {\"include\":$MATRIX_INCLUDE}"
+            echo "Tag v${VERSION} not found — will build and release."
+            echo "should-release=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build-and-release:
+  # ── 2. Parallel version builds ─────────────────────────────────────────────
+  build:
+    name: Build MC ${{ matrix.mc }}
     needs: check-version
-    if: needs.check-version.outputs.matrix != ''
+    if: needs.check-version.outputs.should-release == 'true'
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.check-version.outputs.matrix) }}
+      matrix:
+        mc: ["1.19.2", "1.20.4", "1.20.6"]
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 21
@@ -88,55 +86,116 @@ jobs:
           java-version: "21"
           distribution: "temurin"
 
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant execute permission for gradlew
+      - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build for Minecraft ${{ matrix.minecraft_version }}
-        run: ./gradlew :versions:${{ matrix.minecraft_version }}:build --no-daemon
+      - name: Build Minecraft ${{ matrix.mc }}
+        run: ./gradlew :versions:${{ matrix.mc }}:build --no-daemon
 
-      - name: Get build configuration
-        id: get-config
+      - name: Upload version JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.mc }}
+          path: |
+            versions/${{ matrix.mc }}/build/libs/*.jar
+            !versions/${{ matrix.mc }}/build/libs/*-sources.jar
+            !versions/${{ matrix.mc }}/build/libs/*-dev.jar
+          if-no-files-found: error
+          retention-days: 1
+
+  # ── 3. Merge + release ─────────────────────────────────────────────────────
+  merge-and-release:
+    name: Merge JARs and create release
+    needs: [check-version, build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Download all version JARs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jar-*
+          path: downloaded-jars
+          # Produces: downloaded-jars/jar-1.19.2/*.jar
+          #           downloaded-jars/jar-1.20.4/*.jar
+          #           downloaded-jars/jar-1.20.6/*.jar
+
+      - name: Restore JAR paths for mergeJars task
         run: |
-          ARCHIVES_BASE_NAME=$(grep "archives_base_name=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          echo "archives-base-name=$ARCHIVES_BASE_NAME" >> $GITHUB_OUTPUT
-          echo "Archives base name: $ARCHIVES_BASE_NAME"
+          for MC in 1.19.2 1.20.4 1.20.6; do
+            DEST="versions/$MC/build/libs"
+            mkdir -p "$DEST"
+            cp downloaded-jars/jar-$MC/*.jar "$DEST/"
+            echo "Restored $MC: $(ls $DEST)"
+          done
 
-      - name: Find built JAR
-        id: find-jar
+      - name: Run mergeJars
+        # copyJars / buildAll are skipped — version JARs are already in place.
+        run: ./gradlew mergeJars --no-daemon
+
+      - name: Locate output JARs
+        id: find-jars
         run: |
-          JAR_FILE=$(find versions/${{ matrix.minecraft_version }}/build/libs -name "*.jar" ! -name "*-sources.jar" | head -n 1)
-          echo "jar-file=$JAR_FILE" >> $GITHUB_OUTPUT
-          echo "Found JAR: $JAR_FILE"
+          MERGED=$(find build/libs/merged -name "*-all.jar" | head -1)
+          if [ -z "$MERGED" ]; then
+            echo "ERROR: merged JAR not found in build/libs/merged/" && exit 1
+          fi
+          echo "merged=$MERGED" >> "$GITHUB_OUTPUT"
+          echo "Merged JAR: $MERGED"
 
-      - name: Determine supported Minecraft versions
-        id: mc-support
-        run: |
-          MC_VERSION="${{ matrix.minecraft_version }}"
-          case "$MC_VERSION" in
-            1.19.2)
-              SUPPORT_RANGE="1.19.1-1.19.2"
-              ;;
-            1.20.4)
-              SUPPORT_RANGE="1.20-1.20.4"
-              ;;
-            1.20.6)
-              SUPPORT_RANGE="1.20.6"
-              ;;
-            *)
-              SUPPORT_RANGE="$MC_VERSION"
-              ;;
-          esac
-          echo "support-range=$SUPPORT_RANGE" >> $GITHUB_OUTPUT
-          echo "Supported Minecraft versions: $SUPPORT_RANGE"
-
-      - name: Create Release and Upload Assets
+      - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v${{ needs.check-version.outputs.version }}-${{ matrix.minecraft_version }}" \
-            --title "Release v${{ needs.check-version.outputs.version }} for Minecraft ${{ steps.mc-support.outputs.support-range }}" \
-            --notes "Automated release for version ${{ needs.check-version.outputs.version }} (Supports Minecraft ${{ steps.mc-support.outputs.support-range }})" \
-            "${{ steps.find-jar.outputs.jar-file }}#${{ steps.get-config.outputs.archives-base-name }}-${{ needs.check-version.outputs.version }}-${{ matrix.minecraft_version }}.jar"
+          VERSION="${{ needs.check-version.outputs.version }}"
+          MERGED="${{ steps.find-jars.outputs.merged }}"
+
+          # Per-version JARs attached as additional assets
+          EXTRA=()
+          for MC in 1.19.2 1.20.4 1.20.6; do
+            JAR=$(find "downloaded-jars/jar-$MC" -name "*.jar" | head -1)
+            [ -n "$JAR" ] && EXTRA+=("$JAR")
+          done
+
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --notes "## Orbital Railgun Enhanced v${VERSION}
+
+### 📦 Universal JAR (recommended)
+Download \`$(basename "$MERGED")\` — one file for all supported Minecraft versions.
+
+### ✅ Supported Minecraft versions
+| Subproject | Covers |
+|---|---|
+| 1.19.2 | 1.19.1 · 1.19.2 |
+| 1.20.4 | 1.20 · 1.20.1 · 1.20.2 · 1.20.3 · 1.20.4 |
+| 1.20.6 | 1.20.6 |
+
+### 📋 Required mods
+- [Fabric Loader](https://fabricmc.net/use/installer/)
+- [Fabric API](https://modrinth.com/mod/fabric-api)
+- [GeckoLib](https://modrinth.com/mod/geckolib)
+- [Satin API](https://modrinth.com/mod/satin)
+- [owo-lib](https://modrinth.com/mod/owo-lib)
+
+---
+*Per-version JARs are also attached below for reference.*" \
+            "$MERGED" \
+            "${EXTRA[@]}"

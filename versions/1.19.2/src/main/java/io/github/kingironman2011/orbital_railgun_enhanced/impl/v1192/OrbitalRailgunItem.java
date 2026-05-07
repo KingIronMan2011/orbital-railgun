@@ -1,5 +1,7 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.impl.v1192;
 
+import io.github.kingironman2011.orbital_railgun_enhanced.item.IOrbitalRailgunItem;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +18,7 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
 
-public class OrbitalRailgunItem extends Item implements IAnimatable {
+public class OrbitalRailgunItem extends Item implements IAnimatable, IOrbitalRailgunItem {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
     private final AnimationFactory FACTORY = GeckoLibUtil.createFactory(this);
 

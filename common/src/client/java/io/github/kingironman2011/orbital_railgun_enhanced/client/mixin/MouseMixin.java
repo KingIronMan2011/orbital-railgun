@@ -1,7 +1,7 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.client.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import io.github.kingironman2011.orbital_railgun_enhanced.item.OrbitalRailgunItem;
+import io.github.kingironman2011.orbital_railgun_enhanced.item.IOrbitalRailgunItem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import org.spongepowered.asm.mixin.Final;
@@ -22,6 +22,6 @@ public class MouseMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingSpyglass()Z"))
     public boolean smoothCursorOnAim(boolean original) {
-        return original || this.client.player.getActiveItem().getItem() instanceof OrbitalRailgunItem;
+        return original || this.client.player.getActiveItem().getItem() instanceof IOrbitalRailgunItem;
     }
 }

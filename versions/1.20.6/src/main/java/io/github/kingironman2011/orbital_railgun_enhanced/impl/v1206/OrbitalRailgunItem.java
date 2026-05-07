@@ -1,5 +1,7 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206;
 
+import io.github.kingironman2011.orbital_railgun_enhanced.item.IOrbitalRailgunItem;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +21,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.function.Consumer;
 
-public class OrbitalRailgunItem extends Item implements GeoItem {
+public class OrbitalRailgunItem extends Item implements GeoItem, IOrbitalRailgunItem {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
     private final AnimatableInstanceCache CACHE = GeckoLibUtil.createInstanceCache(this);
     public final MutableObject<GeoRenderProvider> renderProviderHolder = new MutableObject<>();
