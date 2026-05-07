@@ -34,7 +34,8 @@
     {
       "config": "orbital_railgun_enhanced.client.mixins.json",
       "environment": "client"
-    }
+    },
+    "orbital_railgun_enhanced.client.v1192.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
