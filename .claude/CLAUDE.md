@@ -73,100 +73,96 @@ orbital-railgun-enhanced/
 ├── .claude/
 │   └── CLAUDE.md                   ← you are here
 ├── .github/
-│   ├── copilot-instructions.md     ← legacy AI instructions (superseded by this file)
+│   ├── copilot-instructions.md
 │   ├── FUNDING.yml
 │   └── workflows/
 │       ├── build-and-release.yml   ← CI: build matrix + auto-release per MC version
 │       └── codeql.yml
+├── common/                         ← shared source included in ALL version builds via srcDirs
+│   └── src/
+│       ├── main/
+│       │   ├── java/…/
+│       │   │   ├── config/ServerConfig.java
+│       │   │   ├── listener/PlayerAreaListener.java
+│       │   │   └── logger/SoundLogger.java
+│       │   └── resources/
+│       │       ├── orbital_railgun_enhanced.mixins.json
+│       │       └── assets/orbital_railgun_enhanced/
+│       │           ├── lang/          ← all 15 language files
+│       │           ├── sounds/        ← equip.ogg, railgun-shoot.ogg, scope-on.ogg
+│       │           ├── sounds.json
+│       │           ├── icon.png
+│       │           └── data/…/        ← damage_type/strike.json, recipes/
+│       ├── client/
+│       │   ├── java/…/client/
+│       │   │   ├── config/EnhancedConfig.java
+│       │   │   ├── mixin/MouseMixin.java
+│       │   │   └── utils/ModDetector.java
+│       │   └── resources/
+│       │       ├── orbital_railgun_enhanced.client.mixins.json
+│       │       └── assets/orbital_railgun_enhanced/
+│       │           ├── geo/item/
+│       │           ├── models/item/
+│       │           ├── textures/item/
+│       │           └── shaders/post/ + program/   ← all GLSL
+│       └── test/
+│           └── java/…/              ← all 4 test classes (pure JUnit, no MC API)
 ├── config/
-│   └── checkstyle/
-│       └── checkstyle.xml
+│   └── checkstyle/checkstyle.xml
 ├── gradle/wrapper/
 ├── versions/
 │   ├── 1.19.2/                     ← MC 1.19.1–1.19.2 subproject
 │   ├── 1.20.4/                     ← MC 1.20–1.20.4 subproject
 │   └── 1.20.6/                     ← MC 1.20.6 subproject
-├── build.gradle                    ← root aggregator (no source here)
+├── build.gradle
 ├── gradle.properties               ← mod_version, maven_group, archives_base_name
-├── settings.gradle                 ← subproject includes
+├── settings.gradle
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
 ├── TODO.md
 └── README.md
 ```
 
-### Version Subproject Layout (identical structure per MC version)
+### How `common/` Works
+
+Each version subproject's `build.gradle` declares `common/src/*/java` and `common/src/*/resources` as additional `srcDirs` inside the existing `afterEvaluate { sourceSets { … } }` block. Gradle compiles them together — common code is compiled once per version build and ends up in that version's JAR. No runtime magic, no separate Gradle subproject.
+
+When adding a new MC version subproject, copy the `srcDirs` block from an existing version's `build.gradle` — the `rootProject.file('common/src/…')` entries should be included verbatim.
+
+### Version Subproject Layout
+
+Each `versions/<mc_version>/` contains **only what genuinely differs** for that MC version:
 
 ```
 versions/<mc_version>/
-├── build.gradle
-├── gradle.properties               ← minecraft_version, yarn_mappings, dep versions
+├── build.gradle          ← srcDirs include common/; version-specific deps & mappings
+├── gradle.properties     ← minecraft_version, yarn_mappings, dep versions
 └── src/
-    ├── main/                       ← server-side + shared
-    │   ├── java/io/github/kingironman2011/orbital_railgun_enhanced/
-    │   │   ├── OrbitalRailgun.java             ← ModInitializer entrypoint
-    │   │   ├── config/ServerConfig.java         ← server-side JSON config
-    │   │   ├── item/OrbitalRailgunItem.java     ← item logic + GeoItem
-    │   │   ├── item/OrbitalRailgunItems.java    ← item registration
-    │   │   ├── registry/SoundsRegistry.java     ← sound event registration
-    │   │   ├── registry/CommandRegistry.java    ← /ore and /orbitalrailgun commands
-    │   │   ├── utils/OrbitalRailgunStrikeManager.java ← strike tick + explosion
-    │   │   ├── listener/PlayerAreaListener.java ← area/range detection for sounds
-    │   │   ├── logger/SoundLogger.java          ← debug logging helper
-    │   │   └── network/                         ← packet payload records
-    │   │       ├── PlaySoundPayload.java
-    │   │       ├── ShootPayload.java
-    │   │       ├── ClientSyncPayload.java
-    │   │       ├── StopAreaSoundPayload.java
-    │   │       └── StopAnimationPayload.java
+    ├── main/
+    │   ├── java/…/
+    │   │   ├── OrbitalRailgun.java                   ← ModInitializer (networking API differs)
+    │   │   ├── item/OrbitalRailgunItem.java           ← GeckoLib3 vs GeckoLib4 API
+    │   │   ├── item/OrbitalRailgunItems.java          ← Registry vs Registries API
+    │   │   ├── registry/SoundsRegistry.java           ← Registry vs Registries API
+    │   │   ├── registry/CommandRegistry.java          ← sendFeedback() lambda added in 1.20
+    │   │   ├── utils/OrbitalRailgunStrikeManager.java ← DamageSource API differs
+    │   │   └── network/                               ← CustomPayload records (1.20.6+ only)
     │   └── resources/
-    │       ├── fabric.mod.json
-    │       ├── orbital_railgun_enhanced.mixins.json
-    │       └── assets/orbital_railgun_enhanced/
-    │           ├── lang/                        ← 15 language files
-    │           ├── sounds/                      ← equip.ogg, railgun-shoot.ogg, scope-on.ogg
-    │           ├── sounds.json
-    │           ├── icon.png
-    │           └── data/orbital_railgun_enhanced/
-    │               ├── damage_type/strike.json
-    │               └── recipes/orbital_railgun.json
-    ├── client/                      ← client-only
-    │   ├── java/io/github/kingironman2011/orbital_railgun_enhanced/client/
-    │   │   ├── OrbitalRailgunClient.java        ← ClientModInitializer
-    │   │   ├── config/EnhancedConfig.java       ← owo-lib config (volume sliders, toggles)
-    │   │   ├── item/OrbitalRailgunRenderer.java ← GeckoLib renderer
-    │   │   ├── rendering/
-    │   │   │   ├── AbstractOrbitalRailgunShader.java
-    │   │   │   ├── OrbitalRailgunShader.java    ← world-space shader (strike beam)
-    │   │   │   └── OrbitalRailgunGuiShader.java ← GUI overlay shader
-    │   │   ├── handler/SoundsHandler.java       ← client sound playback
-    │   │   ├── mixin/
-    │   │   │   ├── MouseMixin.java              ← intercepts mouse for aiming
-    │   │   │   ├── MinecraftClientMixin.java
-    │   │   │   └── AbstractClientPlayerEntity.java
-    │   │   └── utils/ModDetector.java           ← checks for optional mods (Iris, SPR, etc.)
-    │   └── resources/
-    │       ├── orbital_railgun_enhanced.client.mixins.json
-    │       └── assets/orbital_railgun_enhanced/
-    │           ├── animations/orbital_railgun.animation.json
-    │           ├── geo/item/orbital_railgun.geo.json
-    │           ├── models/item/orbital_railgun.json
-    │           ├── textures/item/orbital_railgun.png
-    │           └── shaders/
-    │               ├── post/                    ← Satin post-processing chain
-    │               │   ├── orbital_railgun_enhanced.json
-    │               │   └── orbital_railgun_enhanced_gui.json
-    │               └── program/                 ← GLSL programs
-    │                   ├── chromatic_abjuration.fsh / .json
-    │                   ├── strike.fsh / .vsh / .json
-    │                   └── gui.fsh / .vsh / .json
-    └── test/
-        └── java/…/
-            ├── config/ServerConfigTest.java
-            ├── integration/ModIntegrationTest.java
-            ├── serialization/SerializationTest.java
-            └── util/StrikeMathTest.java
+    │       └── fabric.mod.json                        ← MC version range in depends block
+    └── client/
+        └── java/…/client/
+            ├── OrbitalRailgunClient.java
+            ├── handler/SoundsHandler.java             ← Registry API + networking differs
+            ├── item/OrbitalRailgunRenderer.java       ← GeckoLib3 vs GeckoLib4 renderer
+            ├── mixin/MinecraftClientMixin.java        ← networking + Vec3d/Vector3f differs
+            ├── mixin/AbstractClientPlayerEntity.java  ← PlayerEntity constructor differs
+            └── rendering/                             ← Matrix4f (joml), Identifier.of() differs
+                ├── AbstractOrbitalRailgunShader.java
+                ├── OrbitalRailgunShader.java
+                └── OrbitalRailgunGuiShader.java
 ```
+
+**Note:** `versions/1.19.2/src/client/resources/…/animations/orbital_railgun.animation.json` stays in 1.19.2 only — GeckoLib3 requires an explicit animation resource path, while GeckoLib4 (`DefaultedItemGeoModel`) discovers it automatically.
 
 ---
 
