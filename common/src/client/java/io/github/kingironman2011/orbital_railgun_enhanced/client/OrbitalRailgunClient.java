@@ -8,7 +8,7 @@ import io.github.kingironman2011.orbital_railgun_enhanced.client.compat.ClientAd
 import net.fabricmc.api.ClientModInitializer;
 
 /**
- * Common client entry point. All version-specific client initialisation
+ * Common client entry point. All version-specific client initialization
  * is delegated to the
  * {@link io.github.kingironman2011.orbital_railgun_enhanced.client.compat.ClientVersionAdapter}
  * resolved by {@link ClientAdapterLoader} at runtime.

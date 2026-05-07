@@ -2,7 +2,7 @@ package io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.mix
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
-import io.github.kingironman2011.orbital_railgun_enhanced.item.OrbitalRailgunItem;
+import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunItem;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
