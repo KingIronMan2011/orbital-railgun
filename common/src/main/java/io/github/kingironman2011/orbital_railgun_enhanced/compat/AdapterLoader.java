@@ -59,7 +59,7 @@ public final class AdapterLoader {
      * Maps an MC version string to the impl sub-package name.
      * Extend this method when adding new MC version subprojects.
      */
-    static String resolvePackage(String mc) {
+    public static String resolvePackage(String mc) {
         int[] parts = parseMcVersion(mc);
         int minor = parts[1];
         int patch  = parts[2];

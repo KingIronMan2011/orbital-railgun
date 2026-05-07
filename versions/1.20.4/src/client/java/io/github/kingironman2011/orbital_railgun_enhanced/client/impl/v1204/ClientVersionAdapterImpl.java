@@ -8,7 +8,6 @@ import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.Orbi
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.OrbitalRailgunGuiShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.OrbitalRailgunShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1204.OrbitalRailgunItems;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.config.EnhancedConfigWrapper;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.SoundsHandler;
 import ladysnake.satin.api.event.PostWorldRenderCallback;
 
@@ -25,13 +24,11 @@ import io.github.kingironman2011.orbital_railgun_enhanced.client.compat.ClientVe
 
 public class ClientVersionAdapterImpl implements ClientVersionAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
-    public static EnhancedConfigWrapper CONFIG;
 
     
     public void initialize() {
         LOGGER.info("Initializing Orbital Railgun Enhanced client...");
 
-        CONFIG = EnhancedConfigWrapper.createAndLoad();
         LOGGER.info("Client configuration loaded");
 
         SoundsHandler sounds = new SoundsHandler();

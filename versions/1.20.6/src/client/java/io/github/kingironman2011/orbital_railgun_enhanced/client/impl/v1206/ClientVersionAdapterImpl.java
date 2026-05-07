@@ -7,7 +7,6 @@ import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.Orbi
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunGuiShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunItems;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.config.EnhancedConfigWrapper;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.SoundsHandler;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.ClientSyncPayload;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.StopAreaSoundPayload;
@@ -27,13 +26,11 @@ import io.github.kingironman2011.orbital_railgun_enhanced.client.compat.ClientVe
 
 public class ClientVersionAdapterImpl implements ClientVersionAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
-    public static EnhancedConfigWrapper CONFIG;
 
     
     public void initialize() {
         LOGGER.info("Initializing Orbital Railgun Enhanced client...");
 
-        CONFIG = EnhancedConfigWrapper.createAndLoad();
         LOGGER.info("Client configuration loaded");
 
         SoundsHandler sounds = new SoundsHandler();
