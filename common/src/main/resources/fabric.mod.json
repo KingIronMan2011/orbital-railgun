@@ -40,12 +40,12 @@
     "orbital_railgun_enhanced.client.v1206.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=${loader_version}",
+    "fabricloader": ">=0.18.4",
     "fabric-api": "*",
     "fabric": "*",
-    "minecraft": ">=1.19.1 <=1.20.4 =1.20.6",
+    "minecraft": ">=1.19.1 <=1.20.6",
     "java": ">=17",
-    "geckolib3": ">=3.1",
+    "${geckolib_name}": ">=3.1",
     "owo-lib": ">=0.8.0",
     "satin": ">=1.9.0"
   },
@@ -76,6 +76,7 @@
         "1.20.2",
         "1.20.3",
         "1.20.4",
+        "1.20.5",
         "1.20.6"
       ],
       "dependencies": {

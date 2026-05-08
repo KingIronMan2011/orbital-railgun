@@ -64,11 +64,13 @@ public final class AdapterLoader {
         int minor = parts[1];
         int patch  = parts[2];
 
-        if (minor == 19) {
+        if (minor == 19 && patch >= 1 && patch <= 2) {
             return "v1192";
         } else if (minor == 20 && patch <= 4) {
             return "v1204";
-        } else if (minor == 20 && patch <= 6) {
+        } else if (minor == 20 && patch == 5) {
+            return "v1205";
+        } else if (minor == 20 && patch == 6) {
             return "v1206";
         }
         // Fallback: use the latest known adapter for forward compatibility
