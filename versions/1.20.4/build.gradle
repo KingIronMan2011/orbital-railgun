@@ -8,10 +8,6 @@ plugins {
 version = rootProject.mod_version
 group = rootProject.maven_group
 
-def cfgVersion = version
-def cfgMinecraftVersion = project.minecraft_version
-def cfgLoaderVersion = project.loader_version
-def cfgOwoLibVersion = project.owolib_version
 def cfgArchivesBaseName = rootProject.archives_base_name
 
 base {
@@ -123,21 +119,6 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
-}
-
-processResources {
-    inputs.property "version", cfgVersion
-    inputs.property "minecraft_version", cfgMinecraftVersion
-    inputs.property "loader_version", cfgLoaderVersion
-    inputs.property "owolib_version", cfgOwoLibVersion
-    filteringCharset = "UTF-8"
-
-    filesMatching("fabric.mod.json") {
-        expand "version": cfgVersion,
-                "minecraft_version": cfgMinecraftVersion,
-                "loader_version": cfgLoaderVersion,
-                "owolib_version": cfgOwoLibVersion
-    }
 }
 
 def targetRuntimeJava = 17

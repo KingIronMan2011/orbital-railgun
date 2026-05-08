@@ -3,10 +3,22 @@
 
 plugins {
     id 'base'
+    id 'java'
 }
+
+def cfgVersion = version
 
 // Get only the version subprojects (not the intermediate 'versions' project)
 def versionProjects = subprojects.findAll { it.path.startsWith(':versions:') && it.path.count(':') == 2 }
+
+processResources {
+    inputs.property "version", cfgVersion
+    filteringCharset = "UTF-8"
+
+    filesMatching("fabric.mod.json") {
+        expand "version": cfgVersion
+    }
+}
 
 // Aggregate task to build all versions
 tasks.register('buildAll') {

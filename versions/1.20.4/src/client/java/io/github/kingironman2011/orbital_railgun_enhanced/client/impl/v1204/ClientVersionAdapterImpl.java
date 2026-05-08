@@ -4,11 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.kingironman2011.orbital_railgun_enhanced.OrbitalRailgun;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.OrbitalRailgunRenderer;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.OrbitalRailgunGuiShader;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.OrbitalRailgunShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1204.OrbitalRailgunItems;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1204.SoundsHandler;
 import ladysnake.satin.api.event.PostWorldRenderCallback;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;

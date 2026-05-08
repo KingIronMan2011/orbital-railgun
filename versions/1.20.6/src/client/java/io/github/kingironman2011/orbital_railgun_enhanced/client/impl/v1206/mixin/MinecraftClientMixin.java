@@ -1,6 +1,5 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.mixin;
 
-import io.github.kingironman2011.orbital_railgun_enhanced.OrbitalRailgun;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunGuiShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunItem;

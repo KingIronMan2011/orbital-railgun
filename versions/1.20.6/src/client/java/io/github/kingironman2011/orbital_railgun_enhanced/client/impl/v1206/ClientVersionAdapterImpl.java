@@ -3,11 +3,7 @@ package io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunRenderer;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunGuiShader;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.OrbitalRailgunShader;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunItems;
-import io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1206.SoundsHandler;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.ClientSyncPayload;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.StopAreaSoundPayload;
 import io.github.kingironman2011.orbital_railgun_enhanced.network.StopAnimationPayload;

@@ -1,7 +1,7 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.compat;
 
 /**
- * Version-specific server-side initialisation delegate.
+ * Version-specific server-side initialization delegate.
  *
  * <p>One implementation exists per supported Minecraft version range and is
  * loaded lazily at runtime by {@link AdapterLoader} so that class references
@@ -10,7 +10,7 @@ package io.github.kingironman2011.orbital_railgun_enhanced.compat;
 public interface VersionAdapter {
 
     /**
-     * Performs all server-side, version-specific initialisation:
+     * Performs all server-side, version-specific initialization:
      * sound &amp; item registration, command registration, networking
      * payload / packet-receiver registration, tick-event setup, etc.
      *
