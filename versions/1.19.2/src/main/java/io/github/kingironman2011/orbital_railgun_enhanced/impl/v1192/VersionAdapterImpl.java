@@ -1,7 +1,5 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.impl.v1192;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1192.OrbitalRailgunItem;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1192.OrbitalRailgunItems;
@@ -31,65 +29,61 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 
-import io.github.kingironman2011.orbital_railgun_enhanced.compat.VersionAdapter;
+import io.github.kingironman2011.orbital_railgun_enhanced.compat.AbstractVersionAdapter;
 import io.github.kingironman2011.orbital_railgun_enhanced.OrbitalRailgun;
 
-public class VersionAdapterImpl implements VersionAdapter {
-    public static final String MOD_ID = "orbital_railgun_enhanced";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+public class VersionAdapterImpl extends AbstractVersionAdapter {
 
-    public static final Identifier PLAY_SOUND_PACKET_ID = new Identifier(MOD_ID, "play_sound");
     public static final Identifier STOP_AREA_SOUND_PACKET_ID =
-            new Identifier(MOD_ID, "stop_area_sound");
+            new Identifier(OrbitalRailgun.MOD_ID, "stop_area_sound");
     public static final Identifier STOP_ANIMATION_PACKET_ID =
-            new Identifier(MOD_ID, "stop_animation");
-    public static final Identifier SHOOT_PACKET_ID = new Identifier(MOD_ID, "shoot_packet");
+            new Identifier(OrbitalRailgun.MOD_ID, "stop_animation");
+    public static final Identifier SHOOT_PACKET_ID = new Identifier(OrbitalRailgun.MOD_ID, "shoot_packet");
     public static final Identifier CLIENT_SYNC_PACKET_ID =
-            new Identifier(MOD_ID, "client_sync_packet");
+            new Identifier(OrbitalRailgun.MOD_ID, "client_sync_packet");
 
-    public static final long RAILGUN_SOUND_DURATION_MS = 52992L;
 
     
     public void initialize() {
-        LOGGER.info("Initializing Orbital Railgun Enhanced...");
+        OrbitalRailgun.LOGGER.info("Initializing Orbital Railgun Enhanced...");
 
         ServerConfig.INSTANCE.loadConfig();
         if (ServerConfig.INSTANCE.isDebugMode()) {
-            LOGGER.info("[DEBUG] Debug mode is enabled");
+            OrbitalRailgun.LOGGER.info("[DEBUG] Debug mode is enabled");
         }
 
         SoundsRegistry.initialize();
-        LOGGER.info("Sounds registry initialized");
+        OrbitalRailgun.LOGGER.info("Sounds registry initialized");
 
         CommandRegistry.registerCommands();
-        LOGGER.info("Commands registered: /ore and /orbitalrailgun");
+        OrbitalRailgun.LOGGER.info("Commands registered: /ore and /orbitalrailgun");
 
         OrbitalRailgunItems.initialize();
-        LOGGER.info("Items registered");
+        OrbitalRailgun.LOGGER.info("Items registered");
 
         OrbitalRailgunStrikeManager.initialize();
-        LOGGER.info("Strike manager initialized");
+        OrbitalRailgun.LOGGER.info("Strike manager initialized");
 
         PlayerAreaListener.setAreaChangeCallback(
                 event ->
                         handleAreaStateChange(event.player(), event.result(), event.laserX(), event.laserZ()));
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
-            LOGGER.info("Registered player area change callback");
+            OrbitalRailgun.LOGGER.info("Registered player area change callback");
         }
 
         ServerPlayConnectionEvents.DISCONNECT.register(
                 (handler, server) -> {
                     PlayerAreaListener.clearPlayerState(handler.getPlayer().getUuid());
                     if (ServerConfig.INSTANCE.isDebugMode()) {
-                        LOGGER.info(
+                        OrbitalRailgun.LOGGER.info(
                                 "[NETWORK] Cleared area state for disconnected player: {}",
                                 handler.getPlayer().getName().getString());
                     }
                 });
 
         ServerPlayNetworking.registerGlobalReceiver(
-                PLAY_SOUND_PACKET_ID,
+                SoundsRegistry.PLAY_SOUND_PACKET_ID,
                 (server, player, handler, buf, responseSender) -> {
                     Identifier soundId = buf.readIdentifier();
                     SoundEvent sound = Registry.SOUND_EVENT.get(soundId);
@@ -102,7 +96,7 @@ public class VersionAdapterImpl implements VersionAdapter {
                     server.execute(
                             () -> {
                                 if (sound == null) {
-                                    OrbitalRailgun.LOGGER.warn(
+                                    OrbitalRailgun.OrbitalRailgun.LOGGER.warn(
                                             "[NETWORK] Received unknown sound id: {}", soundId.toString());
                                     return;
                                 }
@@ -113,10 +107,10 @@ public class VersionAdapterImpl implements VersionAdapter {
                                 double laserZ = blockPos.getZ() + 0.5;
 
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
-                                    LOGGER.info(
+                                    OrbitalRailgun.LOGGER.info(
                                             "[NETWORK] Received PLAY_SOUND_PACKET from player: {}",
                                             player.getName().getString());
-                                    LOGGER.info(
+                                    OrbitalRailgun.LOGGER.info(
                                             "[NETWORK] Playing sound {} at BlockPos: {} with range: {} at time {}",
                                             soundId,
                                             blockPos,
@@ -154,7 +148,7 @@ public class VersionAdapterImpl implements VersionAdapter {
                                                                     pitchShoot);
 
                                                             if (ServerConfig.INSTANCE.isDebugMode()) {
-                                                                LOGGER.info(
+                                                                OrbitalRailgun.LOGGER.info(
                                                                         "[SOUND] Playing sound to player {} (distance: {})",
                                                                         nearbyPlayer.getName().getString(),
                                                                         Math.sqrt(distanceSquared));
@@ -182,10 +176,10 @@ public class VersionAdapterImpl implements VersionAdapter {
                     BlockPos blockPos = buf.readBlockPos();
 
                     if (ServerConfig.INSTANCE.isDebugMode()) {
-                        LOGGER.info("========================================");
-                        LOGGER.info(
+                        OrbitalRailgun.LOGGER.info("========================================");
+                        OrbitalRailgun.LOGGER.info(
                                 "[NETWORK] SHOOT_PACKET received from player: {}", player.getName().getString());
-                        LOGGER.info("[STRIKE] Impact location: {}", blockPos);
+                        OrbitalRailgun.LOGGER.info("[STRIKE] Impact location: {}", blockPos);
                     }
 
                     server.execute(
@@ -196,7 +190,7 @@ public class VersionAdapterImpl implements VersionAdapter {
                                 orbitalRailgun.shoot(player);
 
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
-                                    LOGGER.info("[STRIKE] Orbital railgun fired at ({}, {})", laserX, laserZ);
+                                    OrbitalRailgun.LOGGER.info("[STRIKE] Orbital railgun fired at ({}, {})", laserX, laserZ);
                                 }
 
                                 double range = ServerConfig.INSTANCE.getSoundRange();
@@ -207,7 +201,7 @@ public class VersionAdapterImpl implements VersionAdapter {
                                         new Pair<>(server.getTicks(), player.world.getRegistryKey()));
 
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
-                                    LOGGER.info("[STRIKE] Registered strike with {} nearby entities within range {}", nearby.size(), range);
+                                    OrbitalRailgun.LOGGER.info("[STRIKE] Registered strike with {} nearby entities within range {}", nearby.size(), range);
                                 }
 
                                 nearby.forEach(
@@ -216,11 +210,11 @@ public class VersionAdapterImpl implements VersionAdapter {
                                                 if (PlayerAreaListener.isPlayerInRange(serverPlayer, laserX, laserZ)) {
                                                     ServerPlayNetworking.send(serverPlayer, CLIENT_SYNC_PACKET_ID, PacketByteBufs.create().writeBlockPos(blockPos));
                                                     if (ServerConfig.INSTANCE.isDebugMode()) {
-                                                        LOGGER.debug("[NETWORK] Sent CLIENT_SYNC_PACKET to {} (within range {})", serverPlayer.getName().getString(), range);
+                                                        OrbitalRailgun.LOGGER.debug("[NETWORK] Sent CLIENT_SYNC_PACKET to {} (within range {})", serverPlayer.getName().getString(), range);
                                                     }
                                                 } else {
                                                     if (ServerConfig.INSTANCE.isDebugMode()) {
-                                                        LOGGER.debug("[NETWORK] Skipped CLIENT_SYNC_PACKET for {} (outside range {})", serverPlayer.getName().getString(), range);
+                                                        OrbitalRailgun.LOGGER.debug("[NETWORK] Skipped CLIENT_SYNC_PACKET for {} (outside range {})", serverPlayer.getName().getString(), range);
                                                     }
                                                 }
                                             }
@@ -228,7 +222,7 @@ public class VersionAdapterImpl implements VersionAdapter {
 
                                 int totalPlayers = server.getPlayerManager().getPlayerList().size();
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
-                                    LOGGER.info("[STRIKE] Checking {} players on server for range", totalPlayers);
+                                    OrbitalRailgun.LOGGER.info("[STRIKE] Checking {} players on server for range", totalPlayers);
                                 }
 
                                 server
@@ -244,7 +238,7 @@ public class VersionAdapterImpl implements VersionAdapter {
                                                 });
 
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
-                                    LOGGER.info("========================================");
+                                    OrbitalRailgun.LOGGER.info("========================================");
                                 }
                             });
                 });
@@ -261,87 +255,17 @@ public class VersionAdapterImpl implements VersionAdapter {
 
         ServerTickEvents.END_SERVER_TICK.register(OrbitalRailgunStrikeManager::tick);
 
-        LOGGER.info("Orbital Railgun Enhanced initialization complete!");
+        OrbitalRailgun.LOGGER.info("Orbital Railgun Enhanced initialization complete!");
     }
 
-    /**
-     * Handles area state changes for a player (entering/leaving the sound range). Plays railgun
-     * sounds to players who are in range when the railgun fires.
-     */
-    private static void handleAreaStateChange(
-            ServerPlayerEntity player,
-            PlayerAreaListener.AreaCheckResult result,
-            double laserX,
-            double laserZ) {
-        if (result.hasEntered()) {
-            // Player just entered the sound range
-            long currentTime = System.currentTimeMillis();
-            long elapsedMs = currentTime - result.fireTimestamp;
-
-            if (ServerConfig.INSTANCE.isDebugMode()) {
-                LOGGER.info(
-                        "[AREA] Player {} entered sound range at ({}, {}) - elapsed: {}ms, duration: {}ms",
-                        player.getName().getString(),
-                        laserX,
-                        laserZ,
-                        elapsedMs,
-                        RAILGUN_SOUND_DURATION_MS);
-            }
-
-            SoundLogger.logPlayerEnterRange(
-                    player.getName().getString(),
-                    Math.sqrt(player.squaredDistanceTo(laserX, player.getY(), laserZ)));
-
-            // Only play sound if it hasn't finished yet
-            if (elapsedMs < RAILGUN_SOUND_DURATION_MS) {
-                // Play the railgun shoot sound to the player who just entered range
-                playRailgunSoundToPlayer(player, laserX, laserZ, elapsedMs);
-            } else {
-                if (ServerConfig.INSTANCE.isDebugMode()) {
-                    LOGGER.info(
-                            "[AREA] Sound already ended ({}ms > {}ms) - not playing for player {}",
-                            elapsedMs,
-                            RAILGUN_SOUND_DURATION_MS,
-                            player.getName().getString());
-                }
-            }
-
-        } else if (result.hasLeft()) {
-            // Player just left the sound range - stop any playing area sounds
-            if (ServerConfig.INSTANCE.isDebugMode()) {
-                LOGGER.info(
-                        "[AREA] Player {} left sound range at ({}, {}) - stopping sounds and animation",
-                        player.getName().getString(),
-                        laserX,
-                        laserZ);
-            }
-
-            SoundLogger.logPlayerExitRange(player.getName().getString());
-
-            // Send packet to client to stop area-based sounds
-            stopAreaSoundsForPlayer(player);
-
-            // Send packet to client to stop the animation
-            stopAnimationForPlayer(player);
-
-        } else if (result.isInside) {
-            // Player is still inside the range (already heard the sound)
-            if (ServerConfig.INSTANCE.isDebugMode()) {
-                LOGGER.debug(
-                        "[AREA] Player {} remains in sound range at ({}, {})",
-                        player.getName().getString(),
-                        laserX,
-                        laserZ);
-            }
-        }
-    }
 
     /**
      * Plays the railgun shoot sound to a specific player at the laser impact location.
      *
      * @param elapsedMs How many milliseconds have elapsed since the sound started (for syncing)
      */
-    private static void playRailgunSoundToPlayer(
+    @Override
+    protected void playRailgunSoundToPlayer(
             ServerPlayerEntity player, double laserX, double laserZ, long elapsedMs) {
         // Use the railgun shoot sound from the registry
         SoundEvent shootSound = SoundsRegistry.RAILGUN_SHOOT;
@@ -359,7 +283,7 @@ public class VersionAdapterImpl implements VersionAdapter {
                     player.getName().getString(), SoundsRegistry.RAILGUN_SHOOT_ID.toString(), 1.0f, 1.0f);
 
             if (ServerConfig.INSTANCE.isDebugMode()) {
-                LOGGER.info(
+                OrbitalRailgun.LOGGER.info(
                         "[SOUND] Playing railgun shoot sound to player {} at ({}, {}) with {}ms offset",
                         player.getName().getString(),
                         laserX,
@@ -367,14 +291,15 @@ public class VersionAdapterImpl implements VersionAdapter {
                         elapsedMs);
             }
         } else {
-            LOGGER.warn("[SOUND] Railgun shoot sound not found in registry");
+            OrbitalRailgun.LOGGER.warn("[SOUND] Railgun shoot sound not found in registry");
         }
     }
 
     /**
      * Sends a packet to the client to stop area-based sounds.
      */
-    private static void stopAreaSoundsForPlayer(ServerPlayerEntity player) {
+    @Override
+    protected void stopAreaSoundsForPlayer(ServerPlayerEntity player) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeIdentifier(SoundsRegistry.RAILGUN_SHOOT_ID);
 
@@ -384,20 +309,21 @@ public class VersionAdapterImpl implements VersionAdapter {
                 player.getName().getString(), SoundsRegistry.RAILGUN_SHOOT_ID.toString());
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
-            LOGGER.info("[NETWORK] Sent stop sound packet to player {}", player.getName().getString());
+            OrbitalRailgun.LOGGER.info("[NETWORK] Sent stop sound packet to player {}", player.getName().getString());
         }
     }
 
     /**
      * Sends a packet to the client to stop the orbital railgun animation/shader.
      */
-    private static void stopAnimationForPlayer(ServerPlayerEntity player) {
+    @Override
+    protected void stopAnimationForPlayer(ServerPlayerEntity player) {
         PacketByteBuf buf = PacketByteBufs.create();
 
         ServerPlayNetworking.send(player, STOP_ANIMATION_PACKET_ID, buf);
 
         if (ServerConfig.INSTANCE.isDebugMode()) {
-            LOGGER.info("[NETWORK] Sent stop animation packet to player {}", player.getName().getString());
+            OrbitalRailgun.LOGGER.info("[NETWORK] Sent stop animation packet to player {}", player.getName().getString());
         }
     }
 }

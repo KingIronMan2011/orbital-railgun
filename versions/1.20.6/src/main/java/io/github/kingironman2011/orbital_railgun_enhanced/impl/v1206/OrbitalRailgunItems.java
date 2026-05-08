@@ -19,11 +19,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.text.Text;
 
 public class OrbitalRailgunItems {
-    public static final String MOD_ID = "orbital_railgun_enhanced";
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
     public static final OrbitalRailgunItem ORBITAL_RAILGUN =
             (OrbitalRailgunItem) register(new OrbitalRailgunItem(), "orbital_railgun");
-    public static final RegistryKey<ItemGroup> ORE_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), new Identifier(MOD_ID, "item_group"));
+    public static final RegistryKey<ItemGroup> ORE_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), new Identifier(OrbitalRailgun.MOD_ID, "item_group"));
     public static final ItemGroup ORE_ITEM_GROUP = FabricItemGroup.builder()
             .icon(() -> new ItemStack(ORBITAL_RAILGUN))
             .displayName(Text.translatable("itemGroup.orbital-railgun-enhanced"))

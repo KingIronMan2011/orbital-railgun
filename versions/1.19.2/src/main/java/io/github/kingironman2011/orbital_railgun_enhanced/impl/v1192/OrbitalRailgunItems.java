@@ -10,7 +10,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.Identifier;
 
 public class OrbitalRailgunItems {
-    public static final String MOD_ID = "orbital_railgun_enhanced";
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
     public static final OrbitalRailgunItem ORBITAL_RAILGUN =
             (OrbitalRailgunItem) register(new OrbitalRailgunItem(), "orbital_railgun");
