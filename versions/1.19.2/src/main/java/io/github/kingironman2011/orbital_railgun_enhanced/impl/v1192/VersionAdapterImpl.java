@@ -96,7 +96,7 @@ public class VersionAdapterImpl extends AbstractVersionAdapter {
                     server.execute(
                             () -> {
                                 if (sound == null) {
-                                    OrbitalRailgun.OrbitalRailgun.LOGGER.warn(
+                                    OrbitalRailgun.LOGGER.warn(
                                             "[NETWORK] Received unknown sound id: {}", soundId.toString());
                                     return;
                                 }

@@ -1,11 +1,5 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206;
 
-
-import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunItem;
-import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunItems;
-import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.OrbitalRailgunStrikeManager;
-import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.SoundsRegistry;
-import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.CommandRegistry;
 import io.github.kingironman2011.orbital_railgun_enhanced.logger.SoundLogger;
 import io.github.kingironman2011.orbital_railgun_enhanced.config.ServerConfig;
 import io.github.kingironman2011.orbital_railgun_enhanced.listener.PlayerAreaListener;
@@ -26,6 +20,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.Identifier;
 
 import java.util.List;
 
@@ -100,7 +95,7 @@ public class VersionAdapterImpl extends AbstractVersionAdapter {
                     context.player().server.execute(
                             () -> {
                                 if (sound == null) {
-                                    OrbitalRailgun.OrbitalRailgun.LOGGER.warn(
+                                    OrbitalRailgun.LOGGER.warn(
                                             "[NETWORK] Received unknown sound id: {}", soundId.toString());
                                     return;
                                 }
