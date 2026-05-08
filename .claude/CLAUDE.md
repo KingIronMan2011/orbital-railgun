@@ -19,21 +19,21 @@
 | **Fork of** | [Orbital Railgun](https://modrinth.com/mod/orbital-railgun) by Mishkis |
 | **Repo** | https://github.com/KingIronMan2011/orbital-railgun-enhanced |
 
-**Summary:** This mod adds an orbital strike weapon to Minecraft. Players hold right-click to aim and left-click to fire. After a ~35 second countdown (700 ticks), a cylindrical explosion (radius 24) destroys all blocks in a full-height column, and all nearby entities take damage. The weapon comes with custom sound effects, GLSL screen shaders (chromatic aberration, strike beam), and configurable server-side settings.
+**Summary:** This mod adds an orbital strike weapon to Minecraft. Players hold right-click to aim and left-click to fire. After a ~35 second countdown (700 ticks), a cylindrical explosion (radius 24) destroys all blocks in a full-height column and all nearby entities take damage. Custom sound effects, GLSL screen shaders, and configurable server-side settings included.
 
 ---
 
 ## Supported Minecraft Versions
 
-| MC Version | Build Subproject | Notes |
-|---|---|---|
-| 1.19.1–1.19.2 | `versions/1.19.2` | Full support |
-| 1.20–1.20.4 | `versions/1.20.4` | Full support |
-| 1.20.6 | `versions/1.20.6` | Full support |
-| 1.20.5 | _(missing)_ | TODO: add & verify |
-| 1.21.x | _(missing)_ | TODO: add & verify |
+| Subproject | MC Versions Covered |
+|---|---|
+| `versions/1.19.2` | 1.19.1 · 1.19.2 |
+| `versions/1.20.4` | 1.20 · 1.20.1 · 1.20.2 · 1.20.3 · 1.20.4 |
+| `versions/1.20.6` | 1.20.6 |
+| 1.20.5 | *(missing — not yet added)* |
+| 1.21.x+ | *(missing — not yet added)* |
 
-Each version subproject is fully self-contained (own `build.gradle`, `gradle.properties`, `src/`).
+All three subprojects compile into a single **universal JAR** via the `mergeJars` Gradle task.
 
 ---
 
@@ -45,24 +45,13 @@ Each version subproject is fully self-contained (own `build.gradle`, `gradle.pro
 | Build | Gradle (wrapper), Fabric Loom |
 | Mod Loader | Fabric Loader |
 | Fabric API | Yes (networking, events, registries) |
-| Animation | GeckoLib 4 |
-| Config (client) | owo-lib (provides Mod Menu screen) |
+| Animation | GeckoLib 4 (GeckoLib 3 for 1.19.2 subproject) |
+| Config (client) | owo-lib (`EnhancedConfigWrapper`) |
 | Config (server) | Custom JSON via Gson (`ServerConfig.java`) |
 | Shader pipeline | Satin API |
-| Tests | JUnit Jupiter 5 (unit + integration) |
+| Tests | JUnit Jupiter 5 |
 | Linting | Checkstyle 10.12.5 |
 | CI/CD | GitHub Actions (`build-and-release.yml`) |
-
-### Key Dependencies (1.20.6 subproject as reference)
-
-```
-fabric-api:          0.100.8+1.20.6
-geckolib-fabric:     4.5.4
-satin:               1.18.0
-owo-lib:             0.12.9+1.20.5
-iris:                1.7.2+1.20.6  (compileOnly — shader compat)
-gson:                2.10.1
-```
 
 ---
 
@@ -71,320 +60,249 @@ gson:                2.10.1
 ```
 orbital-railgun-enhanced/
 ├── .claude/
-│   └── CLAUDE.md                   ← you are here
+│   └── CLAUDE.md                        ← you are here
 ├── .github/
-│   ├── copilot-instructions.md
+│   ├── copilot-instructions.md          ← ⚠ STALE — predates refactoring
 │   ├── FUNDING.yml
 │   └── workflows/
-│       ├── build-and-release.yml   ← CI: build matrix + auto-release per MC version
+│       ├── build-and-release.yml        ← CI pipeline (see below)
 │       └── codeql.yml
-├── common/                         ← shared source included in ALL version builds via srcDirs
+├── common/                              ← source included in ALL version builds via srcDirs
 │   └── src/
 │       ├── main/
 │       │   ├── java/…/
+│       │   │   ├── OrbitalRailgun.java          ← thin entry point; delegates to VersionAdapter
+│       │   │   ├── compat/
+│       │   │   │   ├── VersionAdapter.java       ← server-side interface
+│       │   │   │   └── AdapterLoader.java        ← lazy Class.forName dispatcher
 │       │   │   ├── config/ServerConfig.java
+│       │   │   ├── item/IOrbitalRailgunItem.java ← marker interface for common instanceof checks
 │       │   │   ├── listener/PlayerAreaListener.java
 │       │   │   └── logger/SoundLogger.java
 │       │   └── resources/
 │       │       ├── orbital_railgun_enhanced.mixins.json
 │       │       └── assets/orbital_railgun_enhanced/
-│       │           ├── lang/          ← all 15 language files
-│       │           ├── sounds/        ← equip.ogg, railgun-shoot.ogg, scope-on.ogg
+│       │           ├── lang/              ← 15 language files
+│       │           ├── sounds/            ← 3 .ogg files
 │       │           ├── sounds.json
 │       │           ├── icon.png
-│       │           └── data/…/        ← damage_type/strike.json, recipes/
+│       │           └── data/…/            ← damage_type/strike.json, recipes/
 │       ├── client/
 │       │   ├── java/…/client/
-│       │   │   ├── config/EnhancedConfig.java
-│       │   │   ├── mixin/MouseMixin.java
+│       │   │   ├── OrbitalRailgunClient.java    ← thin entry point; holds CONFIG, delegates
+│       │   │   ├── compat/
+│       │   │   │   ├── ClientVersionAdapter.java
+│       │   │   │   └── ClientAdapterLoader.java
+│       │   │   ├── config/EnhancedConfig.java   ← owo-lib config definition
+│       │   │   ├── mixin/MouseMixin.java         ← uses IOrbitalRailgunItem marker interface
 │       │   │   └── utils/ModDetector.java
 │       │   └── resources/
-│       │       ├── orbital_railgun_enhanced.client.mixins.json
+│       │       ├── orbital_railgun_enhanced.client.mixins.json  ← MouseMixin only
 │       │       └── assets/orbital_railgun_enhanced/
-│       │           ├── geo/item/
-│       │           ├── models/item/
-│       │           ├── textures/item/
+│       │           ├── geo/item/, models/item/, textures/item/
 │       │           └── shaders/post/ + program/   ← all GLSL
-│       └── test/
-│           └── java/…/              ← all 4 test classes (pure JUnit, no MC API)
-├── config/
-│   └── checkstyle/checkstyle.xml
-├── gradle/wrapper/
+│       └── test/java/…/                 ← 4 JUnit test classes
+│
 ├── versions/
-│   ├── 1.19.2/                     ← MC 1.19.1–1.19.2 subproject
-│   ├── 1.20.4/                     ← MC 1.20–1.20.4 subproject
-│   └── 1.20.6/                     ← MC 1.20.6 subproject
-├── build.gradle
-├── gradle.properties               ← mod_version, maven_group, archives_base_name
-├── settings.gradle
+│   ├── 1.19.2/
+│   │   ├── build.gradle                 ← srcDirs include common/; 1.19.2 Yarn mappings
+│   │   ├── gradle.properties
+│   │   └── src/
+│   │       ├── main/java/…/impl/v1192/  ← VersionAdapterImpl + all server-side 1.19.2 classes
+│   │       ├── main/resources/fabric.mod.json
+│   │       ├── client/java/…/client/impl/v1192/       ← ClientVersionAdapterImpl + client classes
+│   │       ├── client/java/…/client/impl/v1192/mixin/ ← MinecraftClientMixin, AbstractClientPlayerEntity
+│   │       └── client/resources/orbital_railgun_enhanced.client.v1192.mixins.json
+│   ├── 1.20.4/                          ← same structure, impl/v1204
+│   └── 1.20.6/                          ← same structure, impl/v1206; also has network/ payload records
+│
+├── config/checkstyle/checkstyle.xml
+├── gradle/wrapper/
+├── build.gradle                         ← root: buildAll, copyJars, mergeJars tasks
+├── gradle.properties                    ← mod_version, maven_group, archives_base_name
+├── settings.gradle                      ← subproject includes ⚠ has stale comment
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
-├── TODO.md
 └── README.md
 ```
 
-### How `common/` Works
-
-Each version subproject's `build.gradle` declares `common/src/*/java` and `common/src/*/resources` as additional `srcDirs` inside the existing `afterEvaluate { sourceSets { … } }` block. Gradle compiles them together — common code is compiled once per version build and ends up in that version's JAR. No runtime magic, no separate Gradle subproject.
-
-When adding a new MC version subproject, copy the `srcDirs` block from an existing version's `build.gradle` — the `rootProject.file('common/src/…')` entries should be included verbatim.
-
-### Version Subproject Layout
-
-Each `versions/<mc_version>/` contains **only what genuinely differs** for that MC version:
-
-```
-versions/<mc_version>/
-├── build.gradle          ← srcDirs include common/; version-specific deps & mappings
-├── gradle.properties     ← minecraft_version, yarn_mappings, dep versions
-└── src/
-    ├── main/
-    │   ├── java/…/
-    │   │   ├── OrbitalRailgun.java                   ← ModInitializer (networking API differs)
-    │   │   ├── item/OrbitalRailgunItem.java           ← GeckoLib3 vs GeckoLib4 API
-    │   │   ├── item/OrbitalRailgunItems.java          ← Registry vs Registries API
-    │   │   ├── registry/SoundsRegistry.java           ← Registry vs Registries API
-    │   │   ├── registry/CommandRegistry.java          ← sendFeedback() lambda added in 1.20
-    │   │   ├── utils/OrbitalRailgunStrikeManager.java ← DamageSource API differs
-    │   │   └── network/                               ← CustomPayload records (1.20.6+ only)
-    │   └── resources/
-    │       └── fabric.mod.json                        ← MC version range in depends block
-    └── client/
-        └── java/…/client/
-            ├── OrbitalRailgunClient.java
-            ├── handler/SoundsHandler.java             ← Registry API + networking differs
-            ├── item/OrbitalRailgunRenderer.java       ← GeckoLib3 vs GeckoLib4 renderer
-            ├── mixin/MinecraftClientMixin.java        ← networking + Vec3d/Vector3f differs
-            ├── mixin/AbstractClientPlayerEntity.java  ← PlayerEntity constructor differs
-            └── rendering/                             ← Matrix4f (joml), Identifier.of() differs
-                ├── AbstractOrbitalRailgunShader.java
-                ├── OrbitalRailgunShader.java
-                └── OrbitalRailgunGuiShader.java
-```
-
-**Note:** `versions/1.19.2/src/client/resources/…/animations/orbital_railgun.animation.json` stays in 1.19.2 only — GeckoLib3 requires an explicit animation resource path, while GeckoLib4 (`DefaultedItemGeoModel`) discovers it automatically.
-
 ---
 
-## Core Architecture
+## Architecture
 
-### Strike Lifecycle
+### Key Design: Adapter Pattern + Lazy Class Loading
 
 ```
-Player right-clicks       → UseAction.BOW (scope-in animation + aiming)
-Player left-clicks        → OrbitalRailgunClient sends ShootPayload (C2S)
-Server receives ShootPayload
-  → OrbitalRailgunItem.shoot() sets cooldown
-  → OrbitalRailgunStrikeManager.activeStrikes.put(blockPos + nearby entities, tick)
-  → Sends ClientSyncPayload (S2C) to players in range
-OrbitalRailgunStrikeManager.tick() runs every server tick
-  → age >= 400 ticks: begin gravitational pull (entities dragged toward impact)
-  → age >= 700 ticks: explosion fires
-      → explode() sets all blocks in circular column (radius 24, full height) to AIR
-      → entities in radius take configurable strike damage
-Sound system: PlaySoundPayload (C2S) → server checks PlayerAreaListener range
-  → plays railgun-shoot.ogg to all players within soundRange (default 500 blocks)
-  → PlayerAreaListener tracks enter/leave events for late-joining players
+Runtime MC 1.19.2:
+  OrbitalRailgun.onInitialize()
+    → AdapterLoader.get()
+    → Class.forName("…impl.v1192.VersionAdapterImpl")   ← loaded ✓
+       Class.forName("…impl.v1204.VersionAdapterImpl")   ← never touched ✓
+       Class.forName("…impl.v1206.VersionAdapterImpl")   ← never touched ✓
+    → VersionAdapterImpl (v1192).initialize()
 ```
 
-### Key Constants
+Java only classloads a class when it is actually referenced. By calling `Class.forName()` only for the matching version string, classes that reference absent APIs are never resolved on incompatible runtimes.
 
-| Constant | Value | Location |
+`AdapterLoader.resolvePackage(String mc)` (public static) maps the MC version string to a package suffix. Extend this method when adding new MC version subprojects.
+
+### Common Entry Points
+
+| Class | Responsibility |
+|---|---|
+| `OrbitalRailgun` | Declares `MOD_ID`, `LOGGER`, `RAILGUN_SOUND_DURATION_MS`; calls `AdapterLoader.get().initialize()` |
+| `OrbitalRailgunClient` | Declares static `CONFIG` (`EnhancedConfigWrapper`); loads owo-lib config then calls `ClientAdapterLoader.get().initialize()` |
+
+### Version-Specific Packages
+
+| Version | Server package | Client package |
 |---|---|---|
-| Strike radius | 24 blocks | `OrbitalRailgunStrikeManager.RADIUS` |
-| Pull effect starts | 400 ticks (20s) | `OrbitalRailgunStrikeManager.tick()` |
-| Explosion fires | 700 ticks (35s) | `OrbitalRailgunStrikeManager.tick()` |
-| Default sound range | 500 blocks | `ServerConfig.soundRange` |
-| Default strike damage | 20.0f HP | `ServerConfig.strikeDamage` |
-| Default cooldown | 100 ticks (5s) | `ServerConfig.cooldownTicks` |
-| Sound duration | 52992 ms (~53s) | `OrbitalRailgun.RAILGUN_SOUND_DURATION_MS` |
+| 1.19.2 | `…impl.v1192` | `…client.impl.v1192` |
+| 1.20.4 | `…impl.v1204` | `…client.impl.v1204` |
+| 1.20.6 | `…impl.v1206` | `…client.impl.v1206` |
 
-### Network Packets
+Unique FQNs across all three packages are required for `DuplicatesStrategy.EXCLUDE` merging to work correctly.
 
-| Packet | Direction | Purpose |
+### Mixin JSON Split
+
+| File | Location | Contains |
 |---|---|---|
-| `PlaySoundPayload` | C2S | Client requests server to broadcast railgun sound |
-| `ShootPayload` | C2S | Client notifies server of shot (blockPos + itemStack) |
-| `ClientSyncPayload` | S2C | Server syncs strike to client (blockPos for shader) |
-| `StopAreaSoundPayload` | S2C | Server tells client to stop loop sounds |
-| `StopAnimationPayload` | S2C | Server tells client to stop strike animation |
+| `orbital_railgun_enhanced.client.mixins.json` | `common/src/client/resources/` | `MouseMixin` only |
+| `orbital_railgun_enhanced.client.v1192.mixins.json` | `versions/1.19.2/src/client/resources/` | `MinecraftClientMixin`, `AbstractClientPlayerEntity` |
+| `orbital_railgun_enhanced.client.v1204.mixins.json` | `versions/1.20.4/src/client/resources/` | same |
+| `orbital_railgun_enhanced.client.v1206.mixins.json` | `versions/1.20.6/src/client/resources/` | same |
 
-All payloads are registered via `PayloadTypeRegistry` in `OrbitalRailgun.onInitialize()`.
+Each version's `fabric.mod.json` registers both mixin JSON files.
 
-### Configuration
+### Key Constants (all in `OrbitalRailgun.java` common)
 
-**Server config** → `config/orbital-railgun-enhanced-server-config.json`
-Managed by `ServerConfig.java` (plain Gson, auto-saved on every setter call):
-
-| Field | Default | Description |
-|---|---|---|
-| `debugMode` | `false` | Verbose server log output |
-| `soundRange` | `500.0` | Radius (blocks) for sound/area detection |
-| `strikeDamage` | `20.0` | HP damage dealt to entities on impact |
-| `cooldownTicks` | `100` | Ticks before player can fire again |
-| `maxActiveStrikes` | `10` | Max concurrent active strikes |
-| `enableParticles` | `true` | Toggle particle effects |
-
-**Client config** → `config/orbital-railgun-enhanced.json5`
-Managed by `EnhancedConfig.java` via owo-lib. Accessible in Mod Menu:
-- Volume sliders for each sound (scope, shoot, equip) — range 0.0–1.0
-- Toggle individual sounds on/off
-
-### Commands
-
-| Command | Permission | Description |
-|---|---|---|
-| `/ore` | OP | Short alias for orbital railgun commands |
-| `/orbitalrailgun` | OP | Full command namespace |
-
-See `CommandRegistry.java` for subcommands (debug toggle, config setters, etc.).
+| Constant | Value |
+|---|---|
+| `RAILGUN_SOUND_DURATION_MS` | `52992L` (~53 s) |
+| Strike radius | 24 blocks (in `OrbitalRailgunStrikeManager`) |
+| Pull starts | 400 ticks |
+| Explosion fires | 700 ticks |
 
 ---
 
 ## Build System
 
-### Requirements
-
-- **Java 21** (toolchain; compiles to Java 17 bytecode — do NOT use Java 17 to run Gradle)
-- Network access to: Fabric Maven, Modrinth Maven, GeckoLib Cloudsmith, Ladysnake Maven, Wispforest Maven
-
 ### Common Commands
 
 ```bash
-# Build all MC versions
-./gradlew build --no-daemon
-
-# Build specific version
-./gradlew :versions:1.20.6:build --no-daemon
-./gradlew :versions:1.20.4:build --no-daemon
-./gradlew :versions:1.19.2:build --no-daemon
-
-# Run tests (all versions)
-./gradlew testAll
-
-# Run tests for specific version
-./gradlew :versions:1.20.6:test
-
-# Checkstyle lint (per version)
-./gradlew :versions:1.20.6:checkstyleMain :versions:1.20.6:checkstyleClient
-
-# Clean everything
-./gradlew clean --no-daemon
-
-# Copy built JARs to root build/libs/
-./gradlew copyJars
+./gradlew build --no-daemon              # Full local build: all 3 versions + mergeJars
+./gradlew :versions:1.20.6:build         # Single version
+./gradlew mergeJars --no-daemon          # Merge only (JARs must already exist)
+./gradlew testAll                        # All tests
+./gradlew cleanAll --no-daemon           # Clean everything
 ```
 
-Output JARs:
-- Per version: `versions/<mc_version>/build/libs/orbital_railgun_enhanced-<mod_version>-<mc_version>.jar`
-- Aggregated: `build/libs/`
+### JAR Outputs
 
-### Common Build Issues
-
-| Problem | Fix |
+| Output | Path |
 |---|---|
-| `DownloadException: Failed to download` | Network blocked Mojang asset servers — ensure internet access or use cached Loom |
-| `Previous process has disowned the lock` | `rm -rf ~/.gradle/caches/fabric-loom` then retry |
-| Wrong Java version | Set `JAVA_HOME` to Java 21 installation |
+| Per-version | `versions/<mc>/build/libs/orbital_railgun_enhanced-<mc>-<ver>.jar` |
+| Aggregated | `build/libs/` (via `copyJars`) |
+| Universal merged | `build/libs/merged/orbital_railgun_enhanced-<ver>-all.jar` |
 
 ---
 
-## CI/CD — GitHub Actions
+## CI/CD Pipeline
 
-**Workflow:** `.github/workflows/build-and-release.yml`
+**Workflow:** `.github/workflows/build-and-release.yml`  
+**Trigger:** Push to `main`/`master` touching `gradle.properties`, `versions/**`, `common/**`, `build.gradle`, `settings.gradle`, or the workflow file itself. Also `workflow_dispatch`.
 
-**Trigger:** Push to `main`/`master` with changes in `gradle.properties`, `versions/**`, `build.gradle`, `settings.gradle`, or the workflow file itself. Also: `workflow_dispatch`.
+**Jobs:**
+1. **`check-version`** — reads `mod_version`; checks for tag `v{mod_version}`; sets `should-release` output
+2. **`build` (matrix)** — builds 1.19.2 / 1.20.4 / 1.20.6 in parallel with JDK 21; uploads each JAR as an artifact (1-day retention)
+3. **`merge-and-release`** — downloads all JARs; copies them to `versions/*/build/libs/`; runs `./gradlew mergeJars --no-daemon`; creates one GitHub Release tagged `v{mod_version}` with the universal `-all.jar` as primary asset
 
-**Logic:**
-1. `check-version` job reads `mod_version` from `gradle.properties`.
-2. For each `versions/*/` subproject, checks if git tag `v<mod_version>-<mc_version>` already exists.
-3. Builds a dynamic matrix of only the versions **without** an existing tag.
-4. `build-and-release` runs in parallel for each needed version:
-   - Builds with JDK 21 (Temurin)
-   - Finds the built JAR
-   - Creates a GitHub Release tagged `v<mod_version>-<mc_version>`
-   - Uploads JAR as release asset
-
-**To trigger a new release:** Bump `mod_version` in `gradle.properties` and push to `main`. All three version subprojects will be built and released automatically.
+**To release:** Bump `mod_version` in `gradle.properties` and push to `main`.
 
 ---
 
-## Development Patterns
+## Adding a New MC Version
 
-### Adding a New Sound
-
-1. Add `.ogg` file to `versions/<mc_version>/src/main/resources/assets/orbital_railgun_enhanced/sounds/`
-2. Register the `SoundEvent` in `SoundsRegistry.java`
-3. Add subtitle key to all `lang/*.json` files
-4. Add entry to `sounds.json`
-5. Wire up playback in `SoundsHandler.java` (client) or directly via `player.playSound()` (server)
-6. Optionally add owo-lib volume slider to `EnhancedConfig.java`
-
-### Adding a New Config Option (Server-side)
-
-1. Add private field + getter/setter to `ServerConfig.java`
-2. Call `saveConfig()` inside the setter
-3. Read via `ServerConfig.INSTANCE.get<Option>()` wherever needed
-4. Expose via a `/orbitalrailgun` subcommand in `CommandRegistry.java` (optional)
-
-### Adding a New MC Version Subproject
-
-1. `mkdir -p versions/<new_mc_version>/src/{main,client,test}/java/...`
-2. Copy & adjust `build.gradle` and `gradle.properties` from the nearest version
-3. Add source code (copy from nearest version, update API differences)
-4. Add `include 'versions:<new_mc_version>'` to `settings.gradle`
-5. Add version range mapping to the `mc-support` step in `build-and-release.yml`
-6. Update the supported versions table in `README.md`
-
-### Modifying Strike Behavior
-
-- **Timing/physics:** `OrbitalRailgunStrikeManager.tick()` — pull starts at 400 ticks, impact at 700
-- **Explosion shape:** `OrbitalRailgunStrikeManager.explode()` — circular mask, full-height column
-- **Item usage/cooldown:** `OrbitalRailgunItem.use()` and `OrbitalRailgunItem.shoot()`
-- **Damage:** `OrbitalRailgunStrikeManager.tick()` → configurable via `ServerConfig.strikeDamage`
-
-### Adding Shader Effects
-
-- Shader programs go in `src/client/resources/assets/orbital_railgun_enhanced/shaders/program/` (`.fsh`, `.vsh`, `.json`)
-- Post-processing chain defined in `shaders/post/*.json` (Satin API)
-- Java binding classes extend `AbstractOrbitalRailgunShader`
-- Activate/deactivate shaders in `OrbitalRailgunClient.java` in response to `ClientSyncPayload`
+1. Create `versions/<new_mc>/` with `build.gradle` + `gradle.properties` (copy nearest, update mappings/deps)
+2. Copy the `afterEvaluate { sourceSets { … } }` block from an existing version's `build.gradle` verbatim — the `rootProject.file('common/src/…')` entries are included automatically
+3. Create `impl/v<VTAG>/` and `client/impl/v<VTAG>/` packages under the new version's `src/`
+4. Implement `VersionAdapterImpl` and `ClientVersionAdapterImpl`
+5. Move all other version-specific classes into those packages
+6. Create `orbital_railgun_enhanced.client.v<VTAG>.mixins.json` and register it in `fabric.mod.json`
+7. Add `include 'versions:<new_mc>'` to `settings.gradle`
+8. Add the new package tag to `AdapterLoader.resolvePackage()` in common
+9. `mergeJars` picks it up automatically
 
 ---
 
-## Code Style
+## Known Issues & Planned Improvements
 
-- **4-space indentation** (enforced by Checkstyle)
-- **Checkstyle** runs on `main` and `client` source sets; violations are shown but do NOT fail the build (`ignoreFailures = true`)
-- Checkstyle config: `config/checkstyle/checkstyle.xml`
-- Follow existing patterns in the codebase for imports and class organization
-- Server-only code lives in `src/main/`; client-only code lives in `src/client/` — do not mix environments
+The following issues have been identified but **not yet fixed**, ordered by priority.
 
----
+### 🔴 Bugs
 
-## Testing
+**1. Packet ID mismatch between common and adapters**
+`OrbitalRailgun.java` (common) declares `SHOOT_PACKET_ID = new Identifier(MOD_ID, "shoot")` and `CLIENT_SYNC_PACKET_ID = new Identifier(MOD_ID, "client_sync")`. All three `VersionAdapterImpl` classes declare their own copies with different paths: `"shoot_packet"` and `"client_sync_packet"`. The common constants are never used (dead code) but would silently break packet routing if referenced. Should be removed from common or unified as the single source of truth.
 
-Tests live in `versions/<mc_version>/src/test/java/…`:
+**2. Unconditional `LOGGER.info` spam in the 1.20.6 adapter**
+Several log calls in `VersionAdapterImpl` (v1206) fire on every shot regardless of `debugMode`:
+- `"[NETWORK] Received PLAY_SOUND payload from {}"` — every shot
+- `"[SOUND] Played {} to {} (distance {})"` — every player in range, every shot
+- `"[SOUND] playRailgunSoundToPlayer called for {}"` — late-joiner catch-up
+- `"[SOUND] Server played railgun shoot to {}"` — every nearby player
 
-| Test Class | What it tests |
-|---|---|
-| `StrikeMathTest` | Radius/distance math, mask generation, pull magnitude formula |
-| `ServerConfigTest` | Config load/save/defaults |
-| `SerializationTest` | Network payload serialization |
-| `ModIntegrationTest` | Smoke test — server lifecycle |
+The v1192 and v1204 adapters guard all equivalent calls with `isDebugMode()`. The v1206 adapter needs the same treatment.
 
-Run with: `./gradlew :versions:<mc_version>:test`
+**3. Double entity iteration in v1206 SHOOT handler**
+The `ShootPayload` receiver in `VersionAdapterImpl` (v1206) iterates `nearby.forEach(...)` twice in a row — once to play sounds and send `ClientSyncPayload`, and again for area state checks. These should be merged into a single pass.
+
+### 🟡 Code Quality / Maintainability
+
+**4. `handleAreaStateChange` and related helpers duplicated across all three adapters**
+`handleAreaStateChange`, `playRailgunSoundToPlayer`, `stopAreaSoundsForPlayer`, and `stopAnimationForPlayer` contain nearly identical logic in all three adapters. Only the packet-send calls differ (PacketByteBuf vs typed payload). The shared logic should be extracted to a common helper, with only the send calls delegated via the adapter interface.
+
+**5. `MOD_ID` redeclared in 9 places**
+`OrbitalRailgunItems` and `SoundsRegistry` in each of the 3 version subprojects (6 files), plus all 3 `VersionAdapterImpl` classes. All should reference `OrbitalRailgun.MOD_ID`.
+
+**6. `LOGGER` redeclared in all 3 `VersionAdapterImpl` classes**
+Should use `OrbitalRailgun.LOGGER` (already `public static final`).
+
+**7. `RAILGUN_SOUND_DURATION_MS` redeclared in all 3 `VersionAdapterImpl` classes**
+Should reference `OrbitalRailgun.RAILGUN_SOUND_DURATION_MS`.
+
+**8. Packet ID constants scattered across three classes with no single source of truth**
+`PLAY_SOUND_PACKET_ID` appears in each `SoundsRegistry`, each `VersionAdapterImpl`, and `OrbitalRailgun` (common) — all with slightly different values or construction APIs. Should be centralised in `OrbitalRailgun` or a dedicated `PacketIds` class in common.
+
+**9. Inconsistent `Identifier` construction within and across adapters**
+In the v1204 adapter, `PLAY_SOUND_PACKET_ID = new Identifier(...)` but `SHOOT_PACKET_ID = Identifier.of(...)` in the same class. In `OrbitalRailgun.java` (common), `new Identifier(...)` is used for all packet IDs even though it is deprecated on 1.20.6+. These should be made consistent.
+
+### 🟠 Build System
+
+**10. `build.dependsOn copyJars` appears twice in `build.gradle`**
+Once at `// Make build also copy JARs to root` and again at the `// Full local build…` comment after mergeJars. Also `build.dependsOn buildAll` (line ~18) is redundant since `copyJars` already depends on `buildAll`. The dependency graph needs to be cleaned up.
+
+**11. `mergeJars` has no declared task inputs for incremental builds**
+Gradle cannot determine whether `mergeJars` is up-to-date without declared `inputs.files(...)` pointing at the source JARs. If a version JAR changes without `copyJars` running, `mergeJars` won't re-run automatically.
+
+### 🟢 Housekeeping
+
+**12. 24 leftover empty directories from the refactor**
+All three version subprojects still contain empty `handler/`, `item/`, `mixin/`, `rendering/`, `registry/`, and `utils/` directories left when classes were moved to `impl/vXXXX`. Also, the `impl/vXXXX/mixin/` directories on the server-side (main) are empty. These should be deleted.
+
+**13. `settings.gradle` has a stale comment**
+`"Currently using a single build compiled against 1.20.1, compatible with 1.20-1.20.4"` is completely wrong post-refactoring.
+
+**14. `.github/copilot-instructions.md` is stale**
+Predates `common/`, `impl.vXXXX` packages, and the adapter pattern entirely. Should be updated or replaced with a pointer to this file.
 
 ---
 
 ## Localization
 
-Language files: `src/main/resources/assets/orbital_railgun_enhanced/lang/<locale>.json`
-
-Currently supported (15 languages):
+15 language files in `common/src/main/resources/assets/orbital_railgun_enhanced/lang/`:
 `ar_sa`, `de_de`, `en_us`, `es_es`, `fr_fr`, `hi_in`, `it_it`, `ja_jp`, `ko_kr`, `nl_nl`, `pl_pl`, `pt_br`, `ru_ru`, `sv_se`, `zh_cn`
 
-Machine translations are acceptable as a starting point. Community contributions will refine them. When adding new translation keys, always add to `en_us.json` first, then propagate to other files.
+When adding new translation keys, add to `en_us.json` first, then propagate to all other files.
 
 ---
 
@@ -394,4 +312,4 @@ This mod uses fast-moving lights, chromatic aberration, and intense shader effec
 
 ---
 
-*Last updated: 2026-05-06 — generated by Claude from full repo inspection.*
+*Last updated: 2026-05-07 — full repo re-discovery after JAR-merge architecture refactoring.*
