@@ -111,10 +111,6 @@ public class VersionAdapterImpl implements VersionAdapter {
 
                     long fireTimestamp = System.currentTimeMillis();
 
-                    // Log receipt of payload for debugging
-                    LOGGER.info("[NETWORK] Received PLAY_SOUND payload from {}: sound={} pos={} vol={} pitch={}",
-                            context.player().getName().getString(), soundId, blockPos, volumeShoot, pitchShoot);
-
                     context.player().server.execute(
                             () -> {
                                 if (sound == null) {
@@ -169,10 +165,10 @@ public class VersionAdapterImpl implements VersionAdapter {
                                                                     volumeShoot,
                                                                     pitchShoot);
 
-                                                            // Unconditional log when a sound is played to a player
-                                                            LOGGER.info("[SOUND] Played {} to {} (distance {} )",
-                                                                    soundId, nearbyPlayer.getName().getString(), Math.sqrt(distanceSquared));
-
+                                                            if (ServerConfig.INSTANCE.isDebugMode()) {
+                                                                LOGGER.info("[SOUND] Played {} to {} (distance {})",
+                                                                        soundId, nearbyPlayer.getName().getString(), Math.sqrt(distanceSquared));
+                                                            }
                                                             if (ServerConfig.INSTANCE.isDebugMode()) {
                                                                 LOGGER.info(
                                                                         "[SOUND] Playing sound to player {} (distance: {})",
@@ -230,33 +226,22 @@ public class VersionAdapterImpl implements VersionAdapter {
                                     LOGGER.info("[STRIKE] Registered strike with {} nearby entities within range {}", nearby.size(), range);
                                 }
 
-                                // Immediately play the shoot sound server-side for nearby players in range
                                 nearby.forEach(entity -> {
                                     if (entity instanceof ServerPlayerEntity serverPlayer) {
-                                        double distSq = serverPlayer.squaredDistanceTo(laserX, serverPlayer.getY(), laserZ);
                                         if (PlayerAreaListener.isPlayerInRange(serverPlayer, laserX, laserZ)) {
-                                            // Play server-side so it will be heard by players in range
                                             serverPlayer.playSound(SoundsRegistry.RAILGUN_SHOOT, 1.0f, 1.0f);
-                                            LOGGER.info("[SOUND] Server played railgun shoot to {} (distSq={})", serverPlayer.getName().getString(), distSq);
+                                            ServerPlayNetworking.send(serverPlayer, new ClientSyncPayload(blockPos));
+                                            if (ServerConfig.INSTANCE.isDebugMode()) {
+                                                double distSq = serverPlayer.squaredDistanceTo(laserX, serverPlayer.getY(), laserZ);
+                                                LOGGER.debug("[NETWORK] Sent CLIENT_SYNC + played sound to {} (distSq={})", serverPlayer.getName().getString(), distSq);
+                                            }
+                                        } else {
+                                            if (ServerConfig.INSTANCE.isDebugMode()) {
+                                                LOGGER.debug("[NETWORK] Skipped CLIENT_SYNC for {} (outside range {})", serverPlayer.getName().getString(), range);
+                                            }
                                         }
                                     }
                                 });
-
-                                nearby.forEach(
-                                        (entity -> {
-                                            if (entity instanceof ServerPlayerEntity serverPlayer) {
-                                                if (PlayerAreaListener.isPlayerInRange(serverPlayer, laserX, laserZ)) {
-                                                    ServerPlayNetworking.send(serverPlayer, new ClientSyncPayload(blockPos));
-                                                    if (ServerConfig.INSTANCE.isDebugMode()) {
-                                                        LOGGER.debug("[NETWORK] Sent CLIENT_SYNC_PACKET to {} (within range {})", serverPlayer.getName().getString(), range);
-                                                    }
-                                                } else {
-                                                    if (ServerConfig.INSTANCE.isDebugMode()) {
-                                                        LOGGER.debug("[NETWORK] Skipped CLIENT_SYNC_PACKET for {} (outside range {})", serverPlayer.getName().getString(), range);
-                                                    }
-                                                }
-                                            }
-                                        }));
 
                                 int totalPlayers = context.player().server.getPlayerManager().getPlayerList().size();
                                 if (ServerConfig.INSTANCE.isDebugMode()) {
@@ -389,10 +374,10 @@ public class VersionAdapterImpl implements VersionAdapter {
             SoundLogger.logSoundPlayed(
                     player.getName().getString(), SoundsRegistry.RAILGUN_SHOOT_ID.toString(), 1.0f, 1.0f);
 
-            // Unconditional log for debug when this method is called
-            LOGGER.info("[SOUND] playRailgunSoundToPlayer called for {} at ({}, {}) with offset {}ms",
-                    player.getName().getString(), laserX, laserZ, elapsedMs);
-
+            if (ServerConfig.INSTANCE.isDebugMode()) {
+                LOGGER.debug("[SOUND] playRailgunSoundToPlayer called for {} at ({}, {}) with offset {}ms",
+                        player.getName().getString(), laserX, laserZ, elapsedMs);
+            }
             if (ServerConfig.INSTANCE.isDebugMode()) {
                 LOGGER.info(
                         "[SOUND] Playing railgun shoot sound to player {} at ({}, {}) with {}ms offset",

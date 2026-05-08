@@ -15,9 +15,6 @@ tasks.register('buildAll') {
     dependsOn versionProjects.collect { "${it.path}:build" }
 }
 
-// Make the default 'build' task depend on all subproject builds
-build.dependsOn buildAll
-
 // Task to copy built JARs from version subprojects to root build/libs
 tasks.register('copyJars') {
     description = 'Copies built JARs from version subprojects to root build/libs'
@@ -45,9 +42,6 @@ tasks.register('copyJars') {
     }
 }
 
-// Make build also copy JARs to root
-build.dependsOn copyJars
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Merge all version JARs into a single universal JAR
 // ─────────────────────────────────────────────────────────────────────────────
@@ -69,6 +63,17 @@ tasks.register('mergeJars', Jar) {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
+    // Declare inputs so Gradle's incremental-build system knows when to re-run.
+    // This mirrors the from() sources below; versionProjects is resolved eagerly
+    // here (just directory references, not file contents) which is safe.
+    inputs.files(versionProjects.collect { proj ->
+        fileTree("${proj.projectDir}/build/libs") {
+            include '*.jar'
+            exclude '*-sources.jar'
+            exclude '*-dev.jar'
+        }
+    })
+
     // provider{} defers file-tree enumeration to execution time so configuration
     // does not fail when JARs have not been built yet.
     ['1.20.6', '1.20.4', '1.19.2'].each { mc ->
@@ -85,8 +90,7 @@ tasks.register('mergeJars', Jar) {
     from(rootProject.file('LICENSE'))
 }
 
-// Full local build: build triggers copyJars (which builds all versions),
-// and copyJars is finalised by mergeJars so the universal JAR is always produced.
+// Full local build: build → copyJars (builds all versions) → mergeJars (finalizer).
 copyJars.finalizedBy mergeJars
 build.dependsOn copyJars
 
