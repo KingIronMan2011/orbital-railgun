@@ -16,8 +16,9 @@ pluginManagement {
 rootProject.name = 'orbital-railgun-enhanced'
 
 // Include version-specific subprojects
-// Currently using a single build compiled against 1.20.1, compatible with 1.20-1.20.4
-// Add more version subprojects here when needed for future MC versions
+// All three subprojects are merged into a single universal JAR via mergeJars.
+// To add a new MC version: add a new subproject here, create versions/<mc>/,
+// and add a package entry to AdapterLoader.resolvePackage().
 include 'versions:1.19.2'
 include 'versions:1.20.4'
 include 'versions:1.20.6'
