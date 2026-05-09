@@ -8,6 +8,22 @@ plugins {
 // Get only the version subprojects (not the intermediate 'versions' project)
 def versionProjects = subprojects.findAll { it.path.startsWith(':versions:') && it.path.count(':') == 2 }
 
+// Configure processResources for all version subprojects.
+// fabric.mod.json lives in common/src/main/resources/ and is included in each
+// version's resources via srcDirs. The ${version} placeholder is expanded here
+// using the mod_version from the root gradle.properties.
+configure(versionProjects) {
+    afterEvaluate {
+        processResources {
+            inputs.property "version", rootProject.mod_version
+            filteringCharset "UTF-8"
+            filesMatching("fabric.mod.json") {
+                expand "version": rootProject.mod_version
+            }
+        }
+    }
+}
+
 // Aggregate task to build all versions
 tasks.register('buildAll') {
     description = 'Builds all Minecraft version subprojects'
