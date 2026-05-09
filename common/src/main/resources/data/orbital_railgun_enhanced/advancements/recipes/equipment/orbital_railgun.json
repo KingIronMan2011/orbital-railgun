@@ -1,0 +1,25 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "orbital_railgun_enhanced:orbital_railgun"
+    ]
+  },
+  "criteria": {
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "orbital_railgun_enhanced:orbital_railgun"
+      }
+    },
+    "unlock_instantly": {
+      "trigger": "minecraft:tick"
+    }
+  },
+  "requirements": [
+    [
+      "unlock_instantly",
+      "has_the_recipe"
+    ]
+  ]
+}
