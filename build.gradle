@@ -16,7 +16,7 @@ configure(versionProjects) {
     afterEvaluate {
         processResources {
             inputs.property "version", rootProject.mod_version
-            filteringCharset "UTF-8"
+            filteringCharset = "UTF-8"
             filesMatching("fabric.mod.json") {
                 expand "version": rootProject.mod_version
             }
