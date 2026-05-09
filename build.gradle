@@ -21,6 +21,7 @@ configure(versionProjects) {
             mustRunAfter rootProject.tasks.named('cleanVersionLibs')
         }
         processResources {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             inputs.property "version", rootProject.mod_version
             filteringCharset = "UTF-8"
             filesMatching("fabric.mod.json") {

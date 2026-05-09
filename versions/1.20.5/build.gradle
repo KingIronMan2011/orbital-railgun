@@ -135,9 +135,7 @@ java {
 }
 
 jar {
-    from(rootProject.file("LICENSE")) {
-        rename { "${it}_${cfgArchivesBaseName}" }
-    }
+    from(rootProject.file("LICENSE"))
 }
 
 // configure the maven publication

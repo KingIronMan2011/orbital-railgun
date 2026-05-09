@@ -42,6 +42,11 @@ public class MinecraftClientMixin {
         ItemStack activeStack = player.getActiveItem();
         if (!(activeStack.getItem() instanceof IOrbitalRailgunItem railgun)) return;
 
+        // Bail out immediately if the item is already on cooldown — this prevents
+        // re-entering the fire sequence when handleInputEvents re-triggers use()
+        // in the same tick after stopUsingItem() while the right-click is still held.
+        if (this.player.getItemCooldownManager().isCoolingDown(activeStack.getItem())) return;
+
         ClientVersionAdapter adapter = ClientAdapterLoader.get();
         if (!this.options.attackKey.isPressed()) return;
         if (adapter.isAimActive()) return;
@@ -51,8 +56,11 @@ public class MinecraftClientMixin {
                 || hitResult.getType() == HitResult.Type.MISS
                 || !(hitResult instanceof BlockHitResult blockHit)) return;
 
-        this.interactionManager.stopUsingItem(this.player);
+        // Apply the cooldown BEFORE stopUsingItem() so that when MC immediately
+        // re-invokes use() (right-click still held), isCoolingDown() already
+        // returns true and the item refuses to enter the aiming state again.
         railgun.shoot(this.player);
+        this.interactionManager.stopUsingItem(this.player);
         adapter.onShootFired(blockHit.getBlockPos(), this.player);
         adapter.sendShootPacket(activeStack, blockHit.getBlockPos(), this.player);
     }
