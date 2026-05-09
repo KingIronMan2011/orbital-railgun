@@ -14,6 +14,12 @@ def versionProjects = subprojects.findAll { it.path.startsWith(':versions:') && 
 // using the mod_version from the root gradle.properties.
 configure(versionProjects) {
     afterEvaluate {
+        // Ensure the version JAR tasks run after cleanVersionLibs so that
+        // parallel Gradle execution never writes a fresh JAR into a directory
+        // that cleanVersionLibs has not yet cleared.
+        tasks.matching { it.name == 'remapJar' || it.name == 'build' }.configureEach {
+            mustRunAfter rootProject.tasks.named('cleanVersionLibs')
+        }
         processResources {
             inputs.property "version", rootProject.mod_version
             filteringCharset = "UTF-8"
@@ -24,10 +30,69 @@ configure(versionProjects) {
     }
 }
 
+// Wipes stale JARs from version subproject build/libs/ before any version is built.
+// Without this, bumping mod_version leaves the old JAR alongside the new one and
+// mergeJars picks up both, causing the wrong version's classes to win deduplication.
+tasks.register('cleanStaleJars') {
+    description = 'Removes stale JARs from version and root build directories before a new build'
+    group = 'build'
+    doLast {
+        // Clean each version subproject JAR output (source for mergeJars)
+        versionProjects.each { proj ->
+            def libsDir = proj.file('build/libs')
+            if (libsDir.exists()) {
+                def stale = fileTree(libsDir) { include '*.jar' }.files
+                stale.each { it.delete() }
+                if (!stale.isEmpty())
+                    logger.lifecycle("> Removed ${stale.size()} stale JAR(s) from ${proj.path}/build/libs/")
+            }
+        }
+        // Also clean the aggregated root libs/ so copyJars doesn't leave old copies around
+        def rootLibs = layout.buildDirectory.dir('libs').get().asFile
+        if (rootLibs.exists()) {
+            def stale = fileTree(rootLibs) {
+                include '*.jar'
+                exclude 'merged/**'   // mergeJars output — overwritten anyway, but leave it alone
+            }.files
+            stale.each { it.delete() }
+            if (!stale.isEmpty())
+                logger.lifecycle("> Removed ${stale.size()} stale JAR(s) from root build/libs/")
+        }
+    }
+}
+
+// Removes stale JARs from every version subproject's build/libs before a
+// fresh build so mergeJars never accidentally picks up a JAR from a
+// previous mod version (e.g. 1.3.8 leftovers when building 1.4.0).
+tasks.register('cleanVersionLibs') {
+    description = 'Deletes stale JARs from version subproject build/libs directories'
+    group = 'build'
+    doLast {
+        versionProjects.each { proj ->
+            def libsDir = proj.file('build/libs')
+            if (libsDir.exists()) {
+                def stale = fileTree(libsDir) {
+                    include '*.jar'
+                    exclude '*-sources.jar'
+                    exclude '*-dev.jar'
+                }.files
+                stale.each { jar ->
+                    jar.delete()
+                    logger.lifecycle("[cleanVersionLibs] Removed stale JAR: ${jar.name}")
+                }
+                if (stale.empty) {
+                    logger.lifecycle("[cleanVersionLibs] ${proj.name}: nothing to clean")
+                }
+            }
+        }
+    }
+}
+
 // Aggregate task to build all versions
 tasks.register('buildAll') {
     description = 'Builds all Minecraft version subprojects'
     group = 'build'
+    dependsOn 'cleanVersionLibs'
     dependsOn versionProjects.collect { "${it.path}:build" }
 }
 
