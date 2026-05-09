@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mc: ["1.19.2", "1.20.4", "1.20.6"]
+        mc: ["1.20.4", "1.20.5", "1.20.6"]
 
     steps:
       - name: Checkout
@@ -139,7 +139,7 @@ jobs:
 
       - name: Restore JAR paths for mergeJars task
         run: |
-          for MC in 1.19.2 1.20.4 1.20.6; do
+          for MC in 1.20.4 1.20.5 1.20.6; do
             DEST="versions/$MC/build/libs"
             mkdir -p "$DEST"
             cp downloaded-jars/jar-$MC/*.jar "$DEST/"
@@ -169,7 +169,7 @@ jobs:
 
           # Per-version JARs attached as additional assets
           EXTRA=()
-          for MC in 1.19.2 1.20.4 1.20.6; do
+          for MC in 1.20.4 1.20.5 1.20.6; do
             JAR=$(find "downloaded-jars/jar-$MC" -name "*.jar" | head -1)
             [ -n "$JAR" ] && EXTRA+=("$JAR")
           done
@@ -184,8 +184,8 @@ Download \`$(basename "$MERGED")\` — one file for all supported Minecraft vers
 ### ✅ Supported Minecraft versions
 | Subproject | Covers |
 |---|---|
-| 1.19.2 | 1.19.1 · 1.19.2 |
 | 1.20.4 | 1.20 · 1.20.1 · 1.20.2 · 1.20.3 · 1.20.4 |
+| 1.20.5 | 1.20.5 |
 | 1.20.6 | 1.20.6 |
 
 ### 📋 Required mods

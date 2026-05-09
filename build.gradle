@@ -22,10 +22,10 @@ tasks.register('copyJars') {
     dependsOn buildAll
 
     inputs.files versionProjects.collect { "${it.projectDir}/build/libs" }
-    outputs.dir "${buildDir}/libs"
+    outputs.dir layout.buildDirectory.dir("libs")
 
     doLast {
-        def outputDir = file("${buildDir}").absolutePath + File.separator + "libs"
+        def outputDir = layout.buildDirectory.dir("libs").get().asFile.absolutePath
         file(outputDir).mkdirs()
 
         versionProjects.each { proj ->
@@ -59,7 +59,7 @@ tasks.register('mergeJars', Jar) {
     archiveBaseName    = rootProject.archives_base_name
     archiveVersion     = rootProject.mod_version
     archiveClassifier  = 'all'
-    destinationDirectory = file("${buildDir}/libs/merged")
+    destinationDirectory = layout.buildDirectory.dir("libs/merged")
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
@@ -76,7 +76,7 @@ tasks.register('mergeJars', Jar) {
 
     // provider{} defers file-tree enumeration to execution time so configuration
     // does not fail when JARs have not been built yet.
-    ['1.20.6', '1.20.4', '1.19.2'].each { mc ->
+    ['1.20.6', '1.20.5', '1.20.4'].each { mc ->
         def libsDir = project(":versions:${mc}").file('build/libs')
         from(provider {
             fileTree(libsDir) {

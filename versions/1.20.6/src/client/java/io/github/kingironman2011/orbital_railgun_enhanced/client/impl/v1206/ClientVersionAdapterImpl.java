@@ -19,6 +19,10 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 
 import io.github.kingironman2011.orbital_railgun_enhanced.client.compat.ClientVersionAdapter;
+import io.github.kingironman2011.orbital_railgun_enhanced.network.ShootPayload;
+import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1206.SoundsRegistry;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.item.ItemStack;
 
 public class ClientVersionAdapterImpl implements ClientVersionAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
@@ -92,5 +96,29 @@ public class ClientVersionAdapterImpl implements ClientVersionAdapter {
         PostWorldRenderCallback.EVENT.register(OrbitalRailgunShader.INSTANCE);
 
         // done
+    }
+
+
+    @Override
+    public boolean isAimActive() {
+        return OrbitalRailgunShader.INSTANCE.BlockPosition != null;
+    }
+
+    @Override
+    public net.minecraft.util.hit.HitResult getGuiHitResult() {
+        return OrbitalRailgunGuiShader.INSTANCE.hitResult;
+    }
+
+    @Override
+    public void onShootFired(net.minecraft.util.math.BlockPos blockPos,
+                             net.minecraft.client.network.ClientPlayerEntity player) {
+        OrbitalRailgunShader.INSTANCE.BlockPosition = blockPos.toCenterPos().toVector3f();
+        OrbitalRailgunShader.INSTANCE.Dimension = player.getWorld().getRegistryKey();
+    }
+
+    @Override
+    public void sendShootPacket(ItemStack stack, BlockPos blockPos, ClientPlayerEntity player) {
+        player.playSound(SoundsRegistry.RAILGUN_SHOOT, 1.0f, 1.0f);
+        ClientPlayNetworking.send(new ShootPayload(stack, blockPos));
     }
 }

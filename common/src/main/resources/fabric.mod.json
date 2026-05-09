@@ -34,18 +34,15 @@
     {
       "config": "orbital_railgun_enhanced.client.mixins.json",
       "environment": "client"
-    },
-    "orbital_railgun_enhanced.client.v1192.mixins.json",
-    "orbital_railgun_enhanced.client.v1204.mixins.json",
-    "orbital_railgun_enhanced.client.v1206.mixins.json"
+    }
   ],
   "depends": {
     "fabricloader": ">=0.18.4",
     "fabric-api": "*",
     "fabric": "*",
-    "minecraft": ">=1.19.1 <=1.20.6",
+    "minecraft": ">=1.20 <=1.20.6",
     "java": ">=17",
-    "${geckolib_name}": ">=3.1",
+    "geckolib": ">=4.0.0",
     "owo-lib": ">=0.8.0",
     "satin": ">=1.9.0"
   },
@@ -69,8 +66,6 @@
         "fabric"
       ],
       "game-versions": [
-        "1.19.1",
-        "1.19.2",
         "1.20",
         "1.20.1",
         "1.20.2",

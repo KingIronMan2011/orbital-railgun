@@ -19,6 +19,6 @@ rootProject.name = 'orbital-railgun-enhanced'
 // All three subprojects are merged into a single universal JAR via mergeJars.
 // To add a new MC version: add a new subproject here, create versions/<mc>/,
 // and add a package entry to AdapterLoader.resolvePackage().
-include 'versions:1.19.2'
 include 'versions:1.20.4'
+include 'versions:1.20.5'
 include 'versions:1.20.6'
