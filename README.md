@@ -18,11 +18,9 @@ This Video was made by HyIsNoob, but as it has nearly the same stuff as this mod
 
 | Version | Status      |
 |---------|-------------|
-| 1.19.1 - 1.19.2 | ✅ Supported |
-| 1.20 - 1.20.1 | ✅ Supported |
-| 1.20.2 | ✅ Supported |
-| 1.20.3 - 1.20.4 | ✅ Supported |
-| 1.20.6 | ✅ Supported |
+| 1.19.1 - 1.19.2 | ⚠️ Deprecated |
+| 1.20 - 1.20.6 | ✅ Supported |
+| 1.21 - 1.21.11 | ⏰ Soon |
 
 An unofficial Forge version can be found [here](https://www.curseforge.com/minecraft/mc-mods/orbital-railgun-reforged).
 
