@@ -25,7 +25,7 @@ public class OrbitalRailgunClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         LOGGER.info("Initializing Orbital Railgun Enhanced (client)...");
-        CONFIG = EnhancedConfigWrapper.createAndLoad();
+        config = EnhancedConfigWrapper.createAndLoad();
         ClientAdapterLoader.get().initialize();
         LOGGER.info("Orbital Railgun Enhanced client initialization complete!");
     }
