@@ -43,9 +43,9 @@ public class SoundsHandler {
         }
 
         boolean focused = client.isWindowFocused();
-        float volumeScope = focused ? (float) OrbitalRailgunClient.CONFIG.scopeVolume() : 0.0f;
-        float volumeShoot = focused ? (float) OrbitalRailgunClient.CONFIG.shootVolume() : 0.0f;
-        float volumeEquip = focused ? (float) OrbitalRailgunClient.CONFIG.equipVolume() : 0.0f;
+        float volumeScope = focused ? (float) OrbitalRailgunClient.config.scopeVolume() : 0.0f;
+        float volumeShoot = focused ? (float) OrbitalRailgunClient.config.shootVolume() : 0.0f;
+        float volumeEquip = focused ? (float) OrbitalRailgunClient.config.equipVolume() : 0.0f;
 
         handleRailgunUsage(client, player, volumeScope);
         handleRailgunCooldown(player, volumeShoot);
@@ -61,7 +61,7 @@ public class SoundsHandler {
         boolean isUsingRailgun = !player.getActiveItem().isEmpty() && currentItem == railgunItem;
 
         if (isUsingRailgun) {
-            if (!wasUsing && OrbitalRailgunClient.CONFIG.enableScopeSound()) {
+            if (!wasUsing && OrbitalRailgunClient.config.enableScopeSound()) {
                 scopeSoundInstance =
                         new PositionedSoundInstance(
                                 SoundsRegistry.SCOPE_ON.getId(),
@@ -93,7 +93,7 @@ public class SoundsHandler {
             boolean cooldownNow = player.getItemCooldownManager().isCoolingDown(railgunItem);
             float pitchShoot = 1.0f;
 
-            if (!lastCooldownActive && cooldownNow && OrbitalRailgunClient.CONFIG.enableShootSound()) {
+            if (!lastCooldownActive && cooldownNow && OrbitalRailgunClient.config.enableShootSound()) {
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
                 buf.writeIdentifier(Registries.SOUND_EVENT.getId(SoundsRegistry.RAILGUN_SHOOT));
                 buf.writeBlockPos(player.getBlockPos());
@@ -112,7 +112,7 @@ public class SoundsHandler {
         if (lastSelectedSlot != selected) {
             Item heldItem = player.getMainHandStack().getItem();
 
-            if (heldItem == railgunItem && OrbitalRailgunClient.CONFIG.enableEquipSound()) {
+            if (heldItem == railgunItem && OrbitalRailgunClient.config.enableEquipSound()) {
                 player.playSound(SoundsRegistry.EQUIP, volumeEquip, 1.0f);
             }
 

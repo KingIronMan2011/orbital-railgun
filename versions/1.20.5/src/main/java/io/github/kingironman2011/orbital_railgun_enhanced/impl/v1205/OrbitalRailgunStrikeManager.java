@@ -33,7 +33,7 @@ public class OrbitalRailgunStrikeManager {
             RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(OrbitalRailgun.MOD_ID, "strike"));
     private static final int RADIUS = 24;
     private static final int RADIUS_SQUARED = RADIUS * RADIUS;
-    private static final Boolean[][] mask = new Boolean[RADIUS * 2 + 1][RADIUS * 2 + 1];
+    private static final Boolean[][] MASK = new Boolean[RADIUS * 2 + 1][RADIUS * 2 + 1];
 
     public static void tick(MinecraftServer server) {
         activeStrikes.forEach(
@@ -115,7 +115,7 @@ public class OrbitalRailgunStrikeManager {
         for (int y = world.getBottomY(); y <= world.getHeight(); y++) {
             for (int x = -RADIUS; x <= RADIUS; x++) {
                 for (int z = -RADIUS; z <= RADIUS; z++) {
-                    if (mask[x + RADIUS][z + RADIUS]) {
+                    if (MASK[x + RADIUS][z + RADIUS]) {
                         world.setBlockState(
                                 new BlockPos(origin.getX() + x, y, origin.getZ() + z),
                                 Blocks.AIR.getDefaultState());
@@ -134,7 +134,7 @@ public class OrbitalRailgunStrikeManager {
         LOGGER.info("Initializing strike manager...");
         for (int x = -RADIUS; x <= RADIUS; x++) {
             for (int z = -RADIUS; z <= RADIUS; z++) {
-                mask[x + RADIUS][z + RADIUS] = Vector2i.lengthSquared(x, z) <= RADIUS_SQUARED;
+                MASK[x + RADIUS][z + RADIUS] = Vector2i.lengthSquared(x, z) <= RADIUS_SQUARED;
             }
         }
         if (ServerConfig.INSTANCE.isDebugMode()) {

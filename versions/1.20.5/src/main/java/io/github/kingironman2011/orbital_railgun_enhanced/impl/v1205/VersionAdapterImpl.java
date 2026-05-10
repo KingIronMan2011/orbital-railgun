@@ -31,7 +31,7 @@ public class VersionAdapterImpl extends AbstractVersionAdapter {
 
 
 
-    
+
     public void initialize() {
         // version-specific init
 

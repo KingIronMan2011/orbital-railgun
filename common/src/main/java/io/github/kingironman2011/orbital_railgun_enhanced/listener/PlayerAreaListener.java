@@ -13,7 +13,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 public class PlayerAreaListener {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
-    private static final Map<UUID, AreaState> playerStates = new ConcurrentHashMap<>();
+    private static final Map<UUID, AreaState> PLAYER_STATES = new ConcurrentHashMap<>();
     private static Consumer<AreaChangeEvent> areaChangeCallback = null;
 
     /**
@@ -85,7 +85,7 @@ public class PlayerAreaListener {
         UUID playerId = player.getUuid();
         boolean currentlyInside = isPlayerInRange(player, laserX, laserZ);
 
-        AreaState previousState = playerStates.get(playerId);
+        AreaState previousState = PLAYER_STATES.get(playerId);
         boolean wasInside = previousState != null && previousState.isInside;
 
         boolean isNewLocation =
@@ -96,7 +96,7 @@ public class PlayerAreaListener {
         // Use the existing timestamp if this is the same location, otherwise use the new one
         long timestamp = isNewLocation ? fireTimestamp : previousState.fireTimestamp;
 
-        playerStates.put(playerId, new AreaState(currentlyInside, laserX, laserZ, timestamp));
+        PLAYER_STATES.put(playerId, new AreaState(currentlyInside, laserX, laserZ, timestamp));
 
         AreaCheckResult result = new AreaCheckResult();
         result.isInside = currentlyInside;
@@ -137,7 +137,7 @@ public class PlayerAreaListener {
      * Clears the state for a specific player (useful when player disconnects)
      */
     public static void clearPlayerState(UUID playerId) {
-        playerStates.remove(playerId);
+        PLAYER_STATES.remove(playerId);
     }
 
     /**
@@ -153,7 +153,7 @@ public class PlayerAreaListener {
      */
     public static void checkPlayerPosition(ServerPlayerEntity player) {
         UUID playerId = player.getUuid();
-        AreaState state = playerStates.get(playerId);
+        AreaState state = PLAYER_STATES.get(playerId);
 
         if (state == null) {
             return;

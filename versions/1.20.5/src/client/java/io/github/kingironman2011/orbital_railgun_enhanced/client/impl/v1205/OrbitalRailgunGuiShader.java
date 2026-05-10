@@ -15,7 +15,7 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
             Identifier.of(OrbitalRailgun.MOD_ID, "shaders/post/orbital_railgun_enhanced_gui.json");
     public static final OrbitalRailgunGuiShader INSTANCE = new OrbitalRailgunGuiShader();
 
-    private final Uniform1f uniformIsBlockHit = SHADER.findUniform1f("IsBlockHit");
+    private final Uniform1f uniformIsBlockHit = shaderEffect.findUniform1f("IsBlockHit");
 
     public HitResult hitResult;
 

@@ -20,7 +20,7 @@ public class OrbitalRailgunClient implements ClientModInitializer {
             LoggerFactory.getLogger(OrbitalRailgun.MOD_ID + "-client");
 
     /** Loaded owo-lib client config — accessible from all version-specific code. */
-    public static EnhancedConfigWrapper CONFIG;
+    public static EnhancedConfigWrapper config;
 
     @Override
     public void onInitializeClient() {

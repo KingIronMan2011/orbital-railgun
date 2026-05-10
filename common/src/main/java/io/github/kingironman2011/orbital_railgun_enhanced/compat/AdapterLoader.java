@@ -19,7 +19,7 @@ public final class AdapterLoader {
 
     private static volatile VersionAdapter instance;
 
-    private AdapterLoader() {}
+    private AdapterLoader() { }
 
     /** Returns the singleton {@link VersionAdapter} for the current MC version. */
     public static VersionAdapter get() {

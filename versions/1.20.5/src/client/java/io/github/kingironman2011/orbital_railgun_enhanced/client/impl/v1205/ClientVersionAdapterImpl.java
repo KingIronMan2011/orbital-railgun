@@ -27,7 +27,7 @@ import net.minecraft.item.ItemStack;
 public class ClientVersionAdapterImpl implements ClientVersionAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger("OrbitalRailgunEnhanced");
 
-    
+
     public void initialize() {
         LOGGER.info("Initializing Orbital Railgun Enhanced client...");
 
@@ -40,7 +40,7 @@ public class ClientVersionAdapterImpl implements ClientVersionAdapter {
                 new GeoRenderProvider() {
                     private OrbitalRailgunRenderer renderer;
 
-                    
+
                     public BuiltinModelItemRenderer getGeoItemRenderer() {
                         if (this.renderer == null) {
                             this.renderer = new OrbitalRailgunRenderer();
@@ -58,8 +58,8 @@ public class ClientVersionAdapterImpl implements ClientVersionAdapter {
 
                     context.client().execute(
                             () -> {
-                                OrbitalRailgunShader.INSTANCE.BlockPosition = blockPos.toCenterPos().toVector3f();
-                                OrbitalRailgunShader.INSTANCE.Dimension = context.client().world.getRegistryKey();
+                                OrbitalRailgunShader.INSTANCE.blockPosition = blockPos.toCenterPos().toVector3f();
+                                OrbitalRailgunShader.INSTANCE.dimension = context.client().world.getRegistryKey();
                                 LOGGER.debug("[CLIENT] Synced strike position: {}", blockPos);
                             });
                 });
@@ -101,7 +101,7 @@ public class ClientVersionAdapterImpl implements ClientVersionAdapter {
 
     @Override
     public boolean isAimActive() {
-        return OrbitalRailgunShader.INSTANCE.BlockPosition != null;
+        return OrbitalRailgunShader.INSTANCE.blockPosition != null;
     }
 
     @Override
@@ -112,8 +112,8 @@ public class ClientVersionAdapterImpl implements ClientVersionAdapter {
     @Override
     public void onShootFired(net.minecraft.util.math.BlockPos blockPos,
                              net.minecraft.client.network.ClientPlayerEntity player) {
-        OrbitalRailgunShader.INSTANCE.BlockPosition = blockPos.toCenterPos().toVector3f();
-        OrbitalRailgunShader.INSTANCE.Dimension = player.getWorld().getRegistryKey();
+        OrbitalRailgunShader.INSTANCE.blockPosition = blockPos.toCenterPos().toVector3f();
+        OrbitalRailgunShader.INSTANCE.dimension = player.getWorld().getRegistryKey();
     }
 
     @Override

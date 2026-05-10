@@ -13,8 +13,8 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
             Identifier.of(OrbitalRailgun.MOD_ID, "shaders/post/orbital_railgun_enhanced.json");
     public static final OrbitalRailgunShader INSTANCE = new OrbitalRailgunShader();
 
-    public Vector3f BlockPosition = null;
-    public RegistryKey<World> Dimension = null;
+    public Vector3f blockPosition = null;
+    public RegistryKey<World> dimension = null;
 
     @Override
     protected Identifier getIdentifier() {

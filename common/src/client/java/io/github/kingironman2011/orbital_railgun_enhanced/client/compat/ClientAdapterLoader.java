@@ -13,7 +13,7 @@ public final class ClientAdapterLoader {
 
     private static volatile ClientVersionAdapter instance;
 
-    private ClientAdapterLoader() {}
+    private ClientAdapterLoader() { }
 
     /** Returns the singleton {@link ClientVersionAdapter} for the current MC version. */
     public static ClientVersionAdapter get() {

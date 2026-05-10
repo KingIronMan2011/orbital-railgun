@@ -6,7 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for math utilities used in strike calculations.
@@ -157,7 +158,9 @@ class StrikeMathTest {
     }
 
     private double calculatePullMagnitude(double distance, int age) {
-        if (age <= 400) return 0.0;
+        if (age <= 400) {
+            return 0.0;
+        }
         return Math.min(1.0 / Math.abs(distance - 20.0) * 4.0 * (age - 400.0) / 300.0, 5.0);
     }
 }

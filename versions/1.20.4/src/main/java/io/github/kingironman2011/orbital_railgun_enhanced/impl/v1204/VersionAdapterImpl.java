@@ -36,7 +36,7 @@ public class VersionAdapterImpl extends AbstractVersionAdapter {
             new Identifier(OrbitalRailgun.MOD_ID, "client_sync_packet");
 
 
-    
+
     public void initialize() {
         // version-specific init
 
