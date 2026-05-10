@@ -24,7 +24,7 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
     @Override
     protected boolean shouldRender() {
         var world = MinecraftClient.getInstance().world;
-        return BlockPosition != null && world != null && world.getRegistryKey() == Dimension;
+        return blockPosition != null && world != null && world.getRegistryKey() == dimension;
     }
 
     /**
@@ -32,8 +32,8 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
      * Called when the player leaves the configured range.
      */
     public void stopAnimation() {
-        BlockPosition = null;
-        Dimension = null;
+        blockPosition = null;
+        dimension = null;
         ticks = 0;
     }
 
@@ -41,9 +41,9 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
     public void onEndTick(MinecraftClient minecraftClient) {
         if (ticks >= 1600
                 || minecraftClient.world == null
-                || minecraftClient.world.getRegistryKey() != Dimension) {
-            BlockPosition = null;
-            Dimension = null;
+                || minecraftClient.world.getRegistryKey() != dimension) {
+            blockPosition = null;
+            dimension = null;
         }
 
         super.onEndTick(minecraftClient);
@@ -52,7 +52,7 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
     @Override
     public void onWorldRendered(Camera camera, float tickDelta, long nanoTime) {
         if (shouldRender()) {
-            uniformBlockPosition.set(BlockPosition);
+            uniformBlockPosition.set(blockPosition);
         }
 
         super.onWorldRendered(camera, tickDelta, nanoTime);

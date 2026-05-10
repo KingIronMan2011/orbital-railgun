@@ -43,15 +43,15 @@ public class MinecraftClientMixin {
     public void shootOnAttack(CallbackInfo ci) {
         if (player.getActiveItem().getItem() instanceof OrbitalRailgunItem orbitalRailgun
                 && this.options.attackKey.isPressed()
-                && OrbitalRailgunShader.INSTANCE.BlockPosition == null) {
+                && OrbitalRailgunShader.INSTANCE.blockPosition == null) {
             HitResult hitResult = OrbitalRailgunGuiShader.INSTANCE.hitResult;
             if (hitResult.getType() != HitResult.Type.MISS
                     && hitResult instanceof BlockHitResult blockHitResult) {
                 this.interactionManager.stopUsingItem(this.player);
                 orbitalRailgun.shoot(this.player);
-                OrbitalRailgunShader.INSTANCE.BlockPosition =
+                OrbitalRailgunShader.INSTANCE.blockPosition =
                         blockHitResult.getBlockPos().toCenterPos().toVector3f();
-                OrbitalRailgunShader.INSTANCE.Dimension = player.getWorld().getRegistryKey();
+                OrbitalRailgunShader.INSTANCE.dimension = player.getWorld().getRegistryKey();
 
                 // Play shoot sound locally for the shooter so they always hear it
                 try {
