@@ -11,8 +11,8 @@ import io.github.kingironman2011.orbital_railgun_enhanced.logger.SoundLogger;
  * Abstract base class for all {@link VersionAdapter} implementations.
  *
  * <p>Contains shared server-side logic (area-state handling, enter/leave sound
- * orchestration) that is identical across all MC version subprojects. Version-
- * specific actions — playing sounds, sending network packets — are delegated
+ * orchestration) that is identical across all MC version subprojects.
+ * Version-specific actions — playing sounds, sending network packets — are delegated
  * to abstract hook methods implemented by each concrete subclass.
  */
 public abstract class AbstractVersionAdapter implements VersionAdapter {

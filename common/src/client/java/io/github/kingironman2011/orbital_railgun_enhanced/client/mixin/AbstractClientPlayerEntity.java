@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * Zooms in the FOV while the player is aiming with the orbital railgun,
- * mirroring the spyglass zoom behaviour.
+ * mirroring the spyglass zoom behavior.
  *
  * <p>Uses {@link IOrbitalRailgunItem} so this class compiles against all
  * supported MC versions without importing a version-specific item class.

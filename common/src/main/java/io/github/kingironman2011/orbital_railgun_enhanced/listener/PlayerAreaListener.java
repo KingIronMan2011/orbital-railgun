@@ -57,7 +57,7 @@ public class PlayerAreaListener {
     }
 
     /**
-     * Handles player area check and tracks state changes (entering/leaving area). Returns information
+     * Handles player area check and tracks state changes (entering/leaving the area). Returns information
      * about whether the player's state changed.
      *
      * @param player The player to check
@@ -71,7 +71,7 @@ public class PlayerAreaListener {
     }
 
     /**
-     * Handles player area check and tracks state changes (entering/leaving area) with timestamp.
+     * Handles player area check and tracks state changes (entering/leaving the area) with timestamp.
      * Returns information about whether the player's state changed.
      *
      * @param player        The player to check
@@ -134,7 +134,7 @@ public class PlayerAreaListener {
     }
 
     /**
-     * Clears the state for a specific player (useful when player disconnects)
+     * Clears the state for a specific player (useful when a player disconnects)
      */
     public static void clearPlayerState(UUID playerId) {
         PLAYER_STATES.remove(playerId);

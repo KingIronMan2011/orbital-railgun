@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Intercepts {@code MinecraftClient#handleInputEvents} to detect a left-click
  * while the player is aiming the orbital railgun and trigger the shot sequence.
  *
- * <p>All version-specific behaviour (shader state, networking) is delegated to
+ * <p>All version-specific behavior (shader state, networking) is delegated to
  * {@link ClientVersionAdapter} so this class compiles cleanly against all
  * supported MC versions.
  */

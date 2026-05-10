@@ -17,7 +17,7 @@ import net.minecraft.util.math.BlockPos;
 public interface ClientVersionAdapter {
 
     /**
-     * Performs all client-side, version-specific initialisation:
+     * Performs all client-side, version-specific initialization:
      * renderer registration, networking handler registration,
      * shader setup, sound handler setup, etc.
      *
@@ -43,7 +43,7 @@ public interface ClientVersionAdapter {
 
     /**
      * Called immediately after the player fires so each version can update its
-     * shader state (block position + world dimension) using the appropriate API.
+     * shader state (block position and world dimension) using the appropriate API.
      *
      * @param blockPos  the aimed block position
      * @param player    the firing client player (used to retrieve world key)
