@@ -37,6 +37,16 @@ public class OrbitalRailgunShader extends AbstractOrbitalRailgunShader {
         ticks = 0;
     }
 
+    /** Exposes the active animation time to the Iris-safe fallback renderer. */
+    public int getTicks() {
+        return ticks;
+    }
+
+    /** Whether a strike effect is active in the currently rendered dimension. */
+    public boolean isStrikeActive() {
+        return shouldRender();
+    }
+
     @Override
     public void onEndTick(MinecraftClient minecraftClient) {
         if (ticks >= 1600

@@ -3,7 +3,11 @@ package io.github.kingironman2011.orbital_railgun_enhanced.client.utils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.irisshaders.iris.api.v0.IrisApi;
 
-public class ModDetector {
+/** Utilities for selecting render paths that coexist with optional client mods. */
+public final class ModDetector {
+    private ModDetector() {
+    }
+
     public static boolean isIrisLoaded() {
         return FabricLoader.getInstance().isModLoaded("iris");
     }

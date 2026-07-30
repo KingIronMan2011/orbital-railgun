@@ -1,6 +1,7 @@
 package io.github.kingironman2011.orbital_railgun_enhanced.client.impl.v1205;
 
 import io.github.kingironman2011.orbital_railgun_enhanced.OrbitalRailgun;
+import io.github.kingironman2011.orbital_railgun_enhanced.client.utils.ModDetector;
 import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1205.OrbitalRailgunItem;
 import ladysnake.satin.api.managed.uniform.Uniform1f;
 import net.minecraft.client.MinecraftClient;
@@ -34,9 +35,13 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
     public void onEndTick(MinecraftClient minecraftClient) {
         // is it jank to disable the hud rendering here? yeah kinda
         if (shouldRender()) {
-            this.client.options.hudHidden = true;
+            // The Iris fallback keeps the normal HUD visible and draws its target
+            // indicator in-world, rather than replacing the whole screen.
+            this.client.options.hudHidden = !ModDetector.isShaderPackActive();
+            hitResult = client.player.raycast(300f, 1.0f, false);
         } else if (ticks != 0) {
             this.client.options.hudHidden = false;
+            hitResult = null;
         }
 
         super.onEndTick(minecraftClient);
@@ -45,7 +50,6 @@ public class OrbitalRailgunGuiShader extends AbstractOrbitalRailgunShader {
     @Override
     public void onWorldRendered(Camera camera, float tickDelta, long nanoTime) {
         if (shouldRender()) {
-            hitResult = client.player.raycast(300f, tickDelta, false);
             switch (hitResult.getType()) {
                 case BLOCK:
                     uniformIsBlockHit.set(1);

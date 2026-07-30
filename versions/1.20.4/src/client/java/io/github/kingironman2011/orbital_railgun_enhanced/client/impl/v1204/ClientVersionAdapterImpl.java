@@ -8,6 +8,7 @@ import io.github.kingironman2011.orbital_railgun_enhanced.impl.v1204.OrbitalRail
 import ladysnake.satin.api.event.PostWorldRenderCallback;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.render.item.BuiltinModelItemRenderer;
 import net.minecraft.util.math.BlockPos;
@@ -92,6 +93,10 @@ public class ClientVersionAdapterImpl implements ClientVersionAdapter {
 
         ClientTickEvents.END_CLIENT_TICK.register(OrbitalRailgunShader.INSTANCE);
         PostWorldRenderCallback.EVENT.register(OrbitalRailgunShader.INSTANCE);
+
+        // Uses normal world geometry only while Iris is managing an active shader pack.
+        WorldRenderEvents.AFTER_ENTITIES.register(
+                new IrisCompatibilityRenderer(OrbitalRailgunGuiShader.INSTANCE, OrbitalRailgunShader.INSTANCE));
 
         // done
     }

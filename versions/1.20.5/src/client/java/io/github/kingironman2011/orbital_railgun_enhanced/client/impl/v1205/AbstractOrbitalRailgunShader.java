@@ -8,6 +8,7 @@ import ladysnake.satin.api.managed.uniform.Uniform1f;
 import ladysnake.satin.api.managed.uniform.Uniform3f;
 import ladysnake.satin.api.managed.uniform.UniformMat4;
 import ladysnake.satin.api.util.GlMatrices;
+import io.github.kingironman2011.orbital_railgun_enhanced.client.utils.ModDetector;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
@@ -52,6 +53,13 @@ public abstract class AbstractOrbitalRailgunShader
 
     @Override
     public void onWorldRendered(Camera camera, float tickDelta, long nanoTime) {
+        // Iris owns the main framebuffer while a shader pack is active. Rendering a
+        // Satin post-process pass into it causes visual corruption with many packs.
+        // IrisCompatibilityRenderer supplies a world-geometry fallback instead.
+        if (ModDetector.isShaderPackActive()) {
+            return;
+        }
+
         if (shouldRender()) {
             uniformInverseTransformMatrix.set(GlMatrices.getInverseTransformMatrix(projectionMatrix));
             uniformCameraPosition.set(camera.getPos().toVector3f());
